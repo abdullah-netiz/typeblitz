@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --bg-color: #323437;
+  --main-color: #e2b714;
+  --caret-color: #e2b714;
+  --sub-color: #646669;
+  --text-color: #d1d0c5;
+  --error-color: #ca4754;
+  --error-extra-color: #7e2a33;
+  --font-family: 'Roboto Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-size: 1.5rem;
+  line-height: 1.5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  transition: all 0.3s ease;
+}
+
+#root {
+  width: 100%;
+  max-width: 1000px;
+  padding: 2rem;
+}
+
+.typeblitz-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo span {
+  color: var(--main-color);
+}
+
+.auth-controls {
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.user-name {
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.auth-btn {
+  background: none;
+  border: 1px solid var(--sub-color);
+  color: var(--sub-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.auth-btn:hover {
+  border-color: var(--text-color);
+  color: var(--text-color);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  color: var(--main-color);
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.stats-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--sub-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+/* Typing Area */
+.typing-area {
+  position: relative;
+  width: 100%;
+  max-height: 60vh;
+  overflow: hidden;
+  font-size: 1.8rem;
+  line-height: 1.6;
+  color: var(--sub-color);
+  user-select: none;
+  word-break: break-all;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0 0.5em; /* spacing between words */
+}
+
+/* We hide the native cursor since we have ours */
+.typing-area:focus {
+  outline: none;
+}
+
+.word {
+  display: flex;
+  margin-bottom: 0.5em; /* spacing for multi-line */
+  position: relative;
+}
+
+.letter {
+  position: relative;
+  transition: color 0.1s ease;
+}
+
+.letter.correct {
+  color: var(--text-color);
+}
+
+.letter.incorrect {
+  color: var(--error-color);
+  text-decoration: underline;
+  text-decoration-color: var(--error-extra-color);
+  text-decoration-thickness: 2px;
+}
+
+.letter.extra {
+  color: var(--error-extra-color);
+  opacity: 0.8;
+}
+
+.word.error-underline {
+  text-decoration-line: underline;
+  text-decoration-color: var(--error-color);
+  text-decoration-thickness: 1px;
+}
+
+.space {
+  display: inline-block;
+  min-width: 0.5em; /* gives explicit width for space char logic when calculating caret pos */
+}
+
+.caret {
+  position: absolute;
+  width: 3px;
+  height: 1.6rem;
+  background-color: var(--caret-color);
+  animation: blink 1s infinite;
+  transition: left 0.1s ease-out, top 0.1s ease-out; /* Smooth glide */
+  border-radius: 2px;
+}
+
+.caret.hidden {
+  display: none;
+}
+
+.caret.typing {
+  animation: none; /* Stop blinking while typing */
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Restart & Feedback Hints */
+.restart-hint {
+  text-align: center;
+  color: var(--sub-color);
+  font-size: 1rem;
+  margin-top: 3rem;
+  opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.restart-hint span {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: var(--text-color);
+  font-size: 0.9em;
+}
+
+.save-status {
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+}
+
+.save-status.saving { color: var(--sub-color); }
+.save-status.success { color: var(--main-color); background: rgba(226, 183, 20, 0.1); }
+.save-status.error { color: var(--error-color); background: rgba(202, 71, 84, 0.1); }
+.save-status.hint { color: var(--sub-color); border: 1px dashed rgba(255,255,255,0.1); }
+
+/* Smooth fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
