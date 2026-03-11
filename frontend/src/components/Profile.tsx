@@ -21,7 +21,7 @@ export default function Profile({ onClose }: { onClose: () => void }) {
       if (!user) return;
       try {
         const token = await user.getIdToken();
-        const res = await fetch('http://localhost:5000/api/results/me', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/results/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
