@@ -1,5 +1,6 @@
 .profile-content {
   max-width: 600px;
+  font-family: var(--font-sans);
 }
 
 .profile-header {
@@ -62,7 +63,8 @@
 .stats-table .wpm-cell {
   color: var(--main-color);
   font-size: 1.2rem;
-  font-weight: bold;
+  font-weight: 700;
+  font-family: var(--font-mono);
 }
 
 .stats-table .date-cell {
