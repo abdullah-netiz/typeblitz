@@ -3,6 +3,7 @@ import './App.css';
 import Stats from './components/Stats';
 import AuthModal from './components/AuthModal';
 import Profile from './components/Profile';
+import Leaderboard from './components/Leaderboard';
 import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
 import { calculateWPM } from './utils/wpmCalculator';
@@ -56,6 +57,8 @@ function App() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean | null>(null);
+  const [capsLockOn, setCapsLockOn] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // --- Init ---
   const startNewTest = useCallback(() => {
@@ -215,7 +218,12 @@ function App() {
 
   // --- Keyboard handler ---
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (showAuthModal || showProfile) return;
+    // Detect caps lock
+    if (e.getModifierState) {
+      setCapsLockOn(e.getModifierState('CapsLock'));
+    }
+
+    if (showAuthModal || showProfile || showLeaderboard) return;
     if (status === 'finished') {
       if (e.key === 'Tab') { e.preventDefault(); startNewTest(); }
       return;
@@ -265,7 +273,7 @@ function App() {
     if (currentWord.length >= (words[activeWordIndex]?.length || 0) + 10) return;
     if (e.key !== words[activeWordIndex]?.[currentWord.length]) { newErrors++; setErrors(newErrors); }
     setCurrentWord(prev => prev + e.key);
-  }, [status, words, startNewTest, currentWord, history, activeWordIndex, errors, startTime, showAuthModal, showProfile, finishTest]);
+  }, [status, words, startNewTest, currentWord, history, activeWordIndex, errors, startTime, showAuthModal, showProfile, showLeaderboard, finishTest]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -426,6 +434,7 @@ function App() {
       <header className={`header ${isFocused ? 'header-hidden' : ''}`}>
         <div className="logo"><span>type</span>blitz</div>
         <div className="auth-controls">
+          <button className="auth-btn leaderboard-btn" onClick={() => setShowLeaderboard(true)}>Leaderboard</button>
           {user ? (
             <div className="user-info">
               <span className="user-name" onClick={() => setShowProfile(true)} style={{cursor: 'pointer', textDecoration: 'underline'}}>
@@ -476,6 +485,14 @@ function App() {
       {status !== 'finished' && (
         <div className="typing-area-wrapper">
           <canvas ref={canvasRef} className="particle-canvas" />
+          {capsLockOn && status === 'typing' && (
+            <div className="capslock-indicator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L3 14h6v6h6v-6h6L12 2z" />
+              </svg>
+              CAPS LOCK
+            </div>
+          )}
           <div className="typing-area" ref={typingAreaRef}>
             <div className="words-inner" ref={wordsInnerRef}>
               <div ref={caretRef} className={`caret ${status === 'typing' ? 'typing' : ''}`} />
@@ -507,6 +524,7 @@ function App() {
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       {showProfile && <Profile onClose={() => setShowProfile(false)} />}
+      {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
     </div>
   );
 }

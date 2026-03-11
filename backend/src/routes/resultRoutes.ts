@@ -50,6 +50,56 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<v
   }
 });
 
+// @route   GET /api/results/leaderboard
+// @desc    Gets top 20 users ranked by best WPM
+// @access  Public
+router.get('/leaderboard', async (_req: any, res: Response): Promise<void> => {
+  try {
+    // Aggregate: group by userId, get best WPM per user, join with User for displayName
+    const leaderboard = await Result.aggregate([
+      {
+        $group: {
+          _id: '$userId',
+          bestWpm: { $max: '$wpm' },
+          bestAccuracy: { $max: '$accuracy' },
+          totalTests: { $sum: 1 },
+        },
+      },
+      { $sort: { bestWpm: -1 } },
+      { $limit: 20 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          displayName: '$user.displayName',
+          bestWpm: { $round: ['$bestWpm', 0] },
+          bestAccuracy: { $round: ['$bestAccuracy', 0] },
+          totalTests: 1,
+        },
+      },
+    ]);
+
+    // Add rank
+    const ranked = leaderboard.map((entry: any, idx: number) => ({
+      rank: idx + 1,
+      ...entry,
+    }));
+
+    res.status(200).json(ranked);
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    res.status(500).json({ error: 'Server error fetching leaderboard' });
+  }
+});
+
 // @route   GET /api/results/me
 // @desc    Gets the user's past 10 typing results
 // @access  Private

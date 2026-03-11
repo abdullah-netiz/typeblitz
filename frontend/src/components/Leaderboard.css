@@ -1,0 +1,147 @@
+/* --- Leaderboard Modal --- */
+.leaderboard-modal {
+  background: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.leaderboard-header h2 {
+  font-family: var(--font-sans);
+  font-size: 1.3rem;
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.leaderboard-loading,
+.leaderboard-error,
+.leaderboard-empty {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--text-dim);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+.leaderboard-error {
+  color: var(--error-color);
+}
+
+/* --- Table --- */
+.leaderboard-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr 5rem 5rem 4rem;
+  align-items: center;
+  padding: 0.6rem 0.5rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  transition: background 0.2s;
+}
+
+.leaderboard-row:not(.leaderboard-row-header):hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.leaderboard-row-header {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--sub-color);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Rank highlights */
+.leaderboard-row.rank-1 {
+  background: rgba(212, 165, 49, 0.08);
+  color: var(--main-color);
+  font-weight: 700;
+}
+
+.leaderboard-row.rank-2 {
+  color: #c0c0c0;
+  font-weight: 600;
+}
+
+.leaderboard-row.rank-3 {
+  color: #cd7f32;
+  font-weight: 600;
+}
+
+.lb-rank {
+  text-align: center;
+  font-weight: 700;
+}
+
+.lb-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-wpm, .lb-acc, .lb-tests {
+  text-align: right;
+}
+
+/* --- TK Badge (Typing King) --- */
+.tk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #d4a531, #f0d060);
+  color: #0a0a0a;
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  line-height: 1;
+  box-shadow: 0 0 8px rgba(212, 165, 49, 0.4), 0 0 2px rgba(212, 165, 49, 0.6);
+  animation: tkGlow 2s ease-in-out infinite alternate;
+  flex-shrink: 0;
+}
+
+@keyframes tkGlow {
+  from { box-shadow: 0 0 6px rgba(212, 165, 49, 0.3), 0 0 2px rgba(212, 165, 49, 0.5); }
+  to   { box-shadow: 0 0 12px rgba(212, 165, 49, 0.6), 0 0 4px rgba(212, 165, 49, 0.8); }
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .leaderboard-modal {
+    padding: 1rem;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 2rem 1fr 4rem 4rem 3rem;
+    font-size: 0.75rem;
+  }
+}
