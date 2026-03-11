@@ -30,7 +30,7 @@ body {
   line-height: 1.5;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
   margin: 0;
   transition: all 0.3s ease;
@@ -39,15 +39,16 @@ body {
 #root {
   width: 100%;
   max-width: 1200px;
-  padding: 3vh 5vw;
+  padding: 2vh 5vw;
 }
 
 /* --- Container & Focus Mode --- */
 .typeblitz-container {
   display: flex;
   flex-direction: column;
-  gap: clamp(1rem, 3vh, 2.5rem);
+  gap: clamp(0.6rem, 2vh, 1.5rem);
   width: 100%;
+  padding-top: 2vh;
 }
 
 .typeblitz-container.focused .header-hidden {
@@ -92,6 +93,12 @@ body {
 .auth-controls {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+
+.leaderboard-btn {
+  border-color: var(--main-color-dim);
+  color: var(--main-color);
 }
 
 .user-info {
@@ -218,6 +225,7 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   animation: fadeIn 0.3s ease;
+  margin-bottom: -0.5rem;
 }
 
 /* --- Stats --- */
@@ -263,6 +271,31 @@ body {
 .typing-area-wrapper {
   position: relative;
   width: 100%;
+}
+
+/* --- Caps Lock Indicator --- */
+.capslock-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+  color: var(--error-color);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 0.3rem 0.8rem;
+  margin-bottom: 0.4rem;
+  background: rgba(229, 62, 62, 0.08);
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  border-radius: 4px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeIn 0.2s ease-out;
+  z-index: 2;
+  position: relative;
 }
 
 .particle-canvas {
