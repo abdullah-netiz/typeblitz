@@ -1,14 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #323437;
-  --main-color: #e2b714;
-  --caret-color: #e2b714;
-  --sub-color: #646669;
-  --text-color: #d1d0c5;
-  --error-color: #ca4754;
+  --bg-color: #0a0a0a;
+  --bg-surface: #111111;
+  --main-color: #d4a531;
+  --main-color-dim: rgba(212, 165, 49, 0.15);
+  --caret-color: #d4a531;
+  --sub-color: #4a4a4a;
+  --text-color: #e8e6e3;
+  --text-dim: #6b6b6b;
+  --error-color: #e53e3e;
   --error-extra-color: #7e2a33;
-  --font-family: 'Roboto Mono', monospace;
+  --font-mono: 'Roboto Mono', monospace;
+  --font-sans: 'Inter', -apple-system, sans-serif;
 }
 
 * {
@@ -20,8 +25,8 @@
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-family: var(--font-family);
-  font-size: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
   line-height: 1.5;
   display: flex;
   justify-content: center;
@@ -33,31 +38,51 @@ body {
 
 #root {
   width: 100%;
-  max-width: 1000px;
-  padding: 2rem;
+  max-width: 1200px;
+  padding: 3vh 5vw;
 }
 
+/* --- Container & Focus Mode --- */
 .typeblitz-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: clamp(1rem, 3vh, 2.5rem);
   width: 100%;
 }
 
+.typeblitz-container.focused .header-hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  max-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.typeblitz-container.focused .time-selector {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.typeblitz-container.focused .hint-dimmed {
+  opacity: 0;
+}
+
+/* --- Header --- */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin 0.4s ease;
+  max-height: 80px;
 }
 
 .logo {
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 700;
   color: var(--text-color);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-family: var(--font-sans);
+  letter-spacing: -0.5px;
 }
 
 .logo span {
@@ -73,42 +98,91 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .user-name {
-  color: var(--text-color);
-  opacity: 0.8;
+  color: var(--text-dim);
+  font-family: var(--font-sans);
+  transition: color 0.2s;
+}
+
+.user-name:hover {
+  color: var(--main-color);
 }
 
 .auth-btn {
   background: none;
   border: 1px solid var(--sub-color);
-  color: var(--sub-color);
-  padding: 0.4rem 0.8rem;
-  border-radius: 5px;
+  color: var(--text-dim);
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 0.8rem;
-  transition: all 0.2s;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  letter-spacing: 0.3px;
 }
 
 .auth-btn:hover {
-  border-color: var(--text-color);
-  color: var(--text-color);
-  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--main-color);
+  color: var(--main-color);
+  background-color: var(--main-color-dim);
 }
 
+/* --- Time Selector --- */
+.time-selector {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.4s ease;
+}
+
+.time-btn {
+  background: none;
+  border: none;
+  color: var(--sub-color);
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  font-weight: 500;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.time-btn:hover {
+  color: var(--text-color);
+}
+
+.time-btn.active {
+  color: var(--main-color);
+  background-color: var(--main-color-dim);
+}
+
+/* --- Timer Display --- */
+.timer-display {
+  text-align: center;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  color: var(--main-color);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  animation: fadeIn 0.3s ease;
+}
+
+/* --- Stats --- */
 .stats-container {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  justify-content: center;
+  gap: clamp(2rem, 6vw, 5rem);
   font-size: 1.25rem;
   color: var(--main-color);
   font-weight: 500;
   opacity: 0;
   transform: translateY(-10px);
-  transition: opacity 0.3s, transform 0.3s;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .stats-container.visible {
@@ -119,46 +193,55 @@ body {
 .stat-item {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .stat-label {
-  font-size: 0.8rem;
-  color: var(--sub-color);
+  font-size: 0.75rem;
+  color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  font-family: var(--font-sans);
+  font-weight: 600;
 }
 
 .stat-value {
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
+  line-height: 1.1;
 }
 
-/* Typing Area */
+/* --- Typing Area --- */
 .typing-area {
   position: relative;
   width: 100%;
-  max-height: 60vh;
   overflow: hidden;
-  font-size: 1.8rem;
-  line-height: 1.6;
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  line-height: 2.2;
   color: var(--sub-color);
   user-select: none;
-  word-break: break-all;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 0 0.5em; /* spacing between words */
+  /* Show exactly 3 lines: 3 * fontSize * lineHeight */
+  height: calc(3 * 1em * 2.2);
+  /* Fade out bottom edge */
+  -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
 }
 
-/* We hide the native cursor since we have ours */
 .typing-area:focus {
   outline: none;
 }
 
+.words-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0 0.6em;
+  position: relative;
+  transition: transform 0.25s ease;
+}
+
 .word {
   display: flex;
-  margin-bottom: 0.5em; /* spacing for multi-line */
   position: relative;
 }
 
@@ -180,7 +263,7 @@ body {
 
 .letter.extra {
   color: var(--error-extra-color);
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .word.error-underline {
@@ -191,17 +274,20 @@ body {
 
 .space {
   display: inline-block;
-  min-width: 0.5em; /* gives explicit width for space char logic when calculating caret pos */
+  min-width: 0.5em;
 }
 
+/* --- Caret --- */
 .caret {
   position: absolute;
-  width: 3px;
-  height: 1.6rem;
+  width: 2.5px;
+  height: 1.3em;
+  margin-top: 0.45em;
   background-color: var(--caret-color);
   animation: blink 1s infinite;
-  transition: left 0.1s ease-out, top 0.1s ease-out; /* Smooth glide */
+  transition: left 0.08s ease-out, top 0.08s ease-out;
   border-radius: 2px;
+  z-index: 2;
 }
 
 .caret.hidden {
@@ -209,7 +295,7 @@ body {
 }
 
 .caret.typing {
-  animation: none; /* Stop blinking while typing */
+  animation: none;
 }
 
 @keyframes blink {
@@ -217,25 +303,28 @@ body {
   51%, 100% { opacity: 0; }
 }
 
-/* Restart & Feedback Hints */
+/* --- Restart & Feedback --- */
 .restart-hint {
   text-align: center;
-  color: var(--sub-color);
-  font-size: 1rem;
-  margin-top: 3rem;
-  opacity: 0.8;
+  color: var(--text-dim);
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  font-family: var(--font-sans);
+  opacity: 0.6;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   align-items: center;
+  transition: opacity 0.4s ease;
 }
 
 .restart-hint span {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.2rem 0.5rem;
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 0.15rem 0.5rem;
   border-radius: 4px;
-  color: var(--text-color);
-  font-size: 0.9em;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .save-status {
@@ -243,19 +332,60 @@ body {
   margin-top: 0.5rem;
   padding: 0.3rem 0.6rem;
   border-radius: 4px;
+  font-family: var(--font-sans);
 }
 
-.save-status.saving { color: var(--sub-color); }
-.save-status.success { color: var(--main-color); background: rgba(226, 183, 20, 0.1); }
-.save-status.error { color: var(--error-color); background: rgba(202, 71, 84, 0.1); }
-.save-status.hint { color: var(--sub-color); border: 1px dashed rgba(255,255,255,0.1); }
+.save-status.saving { color: var(--text-dim); }
+.save-status.success { color: var(--main-color); background: var(--main-color-dim); }
+.save-status.error { color: var(--error-color); background: rgba(229, 62, 62, 0.1); }
+.save-status.hint { color: var(--text-dim); border: 1px dashed rgba(255,255,255,0.08); }
 
-/* Smooth fade in */
+/* --- Animations --- */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  #root {
+    padding: 2vh 4vw;
+  }
+
+  .typeblitz-container {
+    gap: clamp(0.75rem, 2vh, 1.5rem);
+  }
+
+  .stats-container {
+    gap: 2rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 1.5vh 3vw;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .time-selector {
+    gap: 0.25rem;
+  }
+
+  .time-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
 }

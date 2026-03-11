@@ -8,22 +8,24 @@ import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
 import { calculateWPM } from './utils/wpmCalculator';
 
-const TEST_WORD_COUNT = 30;
+const TIME_OPTIONS = [15, 30, 60, 120] as const;
+const WORDS_PER_SECOND = 3; // generate enough words to fill the timer
 
 type TestStatus = 'idle' | 'typing' | 'finished';
 
 function App() {
   const [words, setWords] = useState<string[]>([]);
+  const [selectedTime, setSelectedTime] = useState<number>(30);
+  const [timeLeft, setTimeLeft] = useState<number>(30);
   
-  // Phase 2 State: Word-by-word tracking
-  const [history, setHistory] = useState<string[]>([]); // Typed words committed with Space
-  const [currentWord, setCurrentWord] = useState<string>(''); // Currently typed word
+  // Word-by-word tracking
+  const [history, setHistory] = useState<string[]>([]);
+  const [currentWord, setCurrentWord] = useState<string>('');
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
   
   const [status, setStatus] = useState<TestStatus>('idle');
   const [startTime, setStartTime] = useState<number | null>(null);
   
-  // Cumulative errors typed
   const [errors, setErrors] = useState<number>(0);
   
   // Stats
@@ -33,6 +35,10 @@ function App() {
   // Caret position
   const [caretPos, setCaretPos] = useState({ top: 0, left: 0 });
   const typingAreaRef = useRef<HTMLDivElement>(null);
+  const wordsInnerRef = useRef<HTMLDivElement>(null);
+  
+  // Line scroll offset
+  const [scrollOffset, setScrollOffset] = useState(0);
 
   // Authentication & UI State
   const { user, logOut } = useAuth();
@@ -45,73 +51,103 @@ function App() {
 
   // Init words
   const startNewTest = useCallback(() => {
-    setWords(generateWords(TEST_WORD_COUNT));
+    const wordCount = selectedTime * WORDS_PER_SECOND;
+    setWords(generateWords(wordCount));
     setHistory([]);
     setCurrentWord('');
     setActiveWordIndex(0);
     setStatus('idle');
     setStartTime(null);
+    setTimeLeft(selectedTime);
     setErrors(0);
     setWpm(0);
     setAccuracy(100);
     setSaveSuccess(null);
     setIsSaving(false);
-  }, []);
+    setScrollOffset(0);
+  }, [selectedTime]);
 
   useEffect(() => {
     startNewTest();
   }, [startNewTest]);
 
-  // Update Caret Position
+  // Helper to compute final stats and finish test
+  const finishTest = useCallback((currentStartTime: number, finalHist: string[], currentErr: number) => {
+    setStatus('finished');
+    const endTime = Date.now();
+    const timeTaken = endTime - currentStartTime;
+
+    let totalTyped = 0;
+    let correct = 0;
+    finalHist.forEach((word, idx) => {
+      totalTyped += word.length + 1;
+      const expected = words[idx];
+      for (let i = 0; i < word.length; i++) { if (word[i] === expected[i]) correct++; }
+      correct++;
+    });
+
+    const stats = calculateWPM(totalTyped, currentErr, currentStartTime, endTime);
+    setWpm(stats.wpm);
+    setAccuracy(stats.accuracy);
+    saveTypingResult(stats.wpm, stats.accuracy, timeTaken, finalHist.length);
+  }, [words]);
+
+  // Update Caret Position & Line Scroll
   useEffect(() => {
-    if (!typingAreaRef.current) return;
+    if (!wordsInnerRef.current) return;
     
-    // Select all letter and space elements in the active word
-    const activeWordElements = typingAreaRef.current.querySelectorAll(`.word[data-index="${activeWordIndex}"] > .letter, .word[data-index="${activeWordIndex}"] > .space`);
+    const activeWordElements = wordsInnerRef.current.querySelectorAll(`.word[data-index="${activeWordIndex}"] > .letter, .word[data-index="${activeWordIndex}"] > .space`);
     
     let activeElement: Element | undefined;
     const inputLength = currentWord.length;
 
     if (activeWordElements.length > 0) {
       if (inputLength === 0) {
-        // Very beginning of the word
         activeElement = activeWordElements[0];
       } else if (inputLength < activeWordElements.length) {
-        // Sitting on the next intended character
         activeElement = activeWordElements[inputLength];
       } else {
-        // At the end of the word (or typing extra characters)
-        activeElement = activeWordElements[activeWordElements.length - 1]; // Last rendered character
+        activeElement = activeWordElements[activeWordElements.length - 1];
       }
     }
 
     if (activeElement) {
+      const innerRect = wordsInnerRef.current.getBoundingClientRect();
       const rect = activeElement.getBoundingClientRect();
-      const parentRect = typingAreaRef.current.getBoundingClientRect();
       
-      let left = rect.left - parentRect.left;
-      const top = rect.top - parentRect.top;
+      let left = rect.left - innerRect.left;
+      const top = rect.top - innerRect.top;
       
-      // If we typed all characters of the word, put the caret AFTER the last character
       if (inputLength >= activeWordElements.length && inputLength > 0) {
          left += rect.width;
       }
       
       setCaretPos({ left, top });
+
+      // Compute line height from first word element
+      const firstWord = wordsInnerRef.current.querySelector('.word');
+      if (firstWord) {
+        const lineHeight = firstWord.getBoundingClientRect().height;
+        // How many lines down is the active word (relative to un-scrolled position)?
+        const activeLine = Math.round(top / lineHeight);
+        // Keep the active word on the first visible line (scroll when it reaches line 1+)
+        const targetScroll = Math.max(0, activeLine) * lineHeight;
+        if (targetScroll !== scrollOffset) {
+          setScrollOffset(targetScroll);
+        }
+      }
     }
-  }, [currentWord, activeWordIndex, words, history]);
+  }, [currentWord, activeWordIndex, words, history, scrollOffset]);
 
   // Helper to sync stats dynamically
   const fetchDynamicStats = useCallback((currentStart: number, currentHist: string[], currentInput: string, currentErr: number) => {
      let totalTyped = 0;
      let correct = 0;
      currentHist.forEach((word, idx) => {
-       const wLength = word.length + 1; // +1 for the space that was used to commit
-       totalTyped += wLength;
-       // Count correct keystrokes
+       totalTyped += word.length + 1;
        const expected = words[idx];
        for(let i=0; i<word.length; i++){ if(word[i] === expected[i]) correct++; }
-       correct++; // the space was "correct"
+       correct++;
      });
      
      totalTyped += currentInput.length;
@@ -124,7 +160,7 @@ function App() {
 
   // Handle Save to API
   const saveTypingResult = useCallback(async (finalWpm: number, finalAcc: number, timeTaken: number, wordCount: number) => {
-    if (!user) return; // Only save if logged in
+    if (!user) return;
     
     setIsSaving(true);
     setSaveSuccess(null);
@@ -159,9 +195,33 @@ function App() {
     }
   }, [user]);
 
+  // Countdown timer
+  useEffect(() => {
+    let interval: number;
+    if (status === 'typing' && startTime) {
+      interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = selectedTime - elapsed;
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          // Time's up — finish
+          const finalHist = [...history];
+          if (currentWord.length > 0) {
+            finalHist.push(currentWord);
+          }
+          finishTest(startTime, finalHist, errors);
+          clearInterval(interval);
+        } else {
+          setTimeLeft(remaining);
+        }
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [status, startTime, selectedTime, history, currentWord, errors, finishTest]);
+
   // Keyboard Event Handler
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (showAuthModal || showProfile) return; // Don't track typing when models are open
+    if (showAuthModal || showProfile) return;
 
     if (status === 'finished') {
       if (e.key === 'Tab') {
@@ -192,17 +252,12 @@ function App() {
 
     if (e.key === 'Backspace') {
       if (currentWord.length > 0) {
-        // Simply remove the last character of current word
         setCurrentWord(prev => prev.slice(0, -1));
       } else if (activeWordIndex > 0) {
-        // Go back to the previous word
         const prevWordIndex = activeWordIndex - 1;
         const previousTypedWord = history[prevWordIndex];
-        
-        // Remove the previous word from history
         const newHistory = [...history];
         newHistory.pop();
-        
         setHistory(newHistory);
         setCurrentWord(previousTypedWord);
         setActiveWordIndex(prevWordIndex);
@@ -211,13 +266,9 @@ function App() {
     }
 
     if (e.key === ' ') {
-      // Prevent committing if the word is entirely empty
       if (currentWord.length === 0) return;
 
       const expectedText = words[activeWordIndex];
-      // Note: we don't automatically mark remainder spaces as errors according to classic Monkeytype logic.
-      // E.g., if you type "t", space. It just shows the word as incorrectly finished.
-      // But we can add an error to WPM total for missing characters.
       if (currentWord !== expectedText) {
          newErrors++;
          setErrors(newErrors);
@@ -227,39 +278,25 @@ function App() {
       setCurrentWord('');
       setActiveWordIndex(prev => prev + 1);
 
-      // Check if finished
+      // Check if all words typed (unlikely with timer, but safety)
       if (activeWordIndex === words.length - 1) {
-         setStatus('finished');
-         // Use the newly constructed history state for stats
          const finalHist = [...history, currentWord];
-         const endTimeStr = Date.now();
-         const timeTaken = endTimeStr - (currentStartTime || endTimeStr);
-         
-         const stats = fetchDynamicStats(currentStartTime || endTimeStr, finalHist, '', newErrors);
-         setWpm(stats.wpm);
-         setAccuracy(stats.accuracy);
-         
-         // Trigger Backend Save
-         saveTypingResult(stats.wpm, stats.accuracy, timeTaken, words.length);
+         finishTest(currentStartTime || Date.now(), finalHist, newErrors);
       }
       return;
     }
 
     // Normal Character Input
-    const expectedChar = words[activeWordIndex]?.[currentWord.length];
-    
-    // Optional: Max length for extra chars
     if (currentWord.length >= (words[activeWordIndex]?.length || 0) + 10) return;
 
-    if (e.key !== expectedChar) {
+    if (e.key !== words[activeWordIndex]?.[currentWord.length]) {
       newErrors++;
       setErrors(newErrors);
     }
 
-    const nextInput = currentWord + e.key;
-    setCurrentWord(nextInput);
+    setCurrentWord(prev => prev + e.key);
 
-  }, [status, words, startNewTest, currentWord, history, activeWordIndex, errors, startTime, fetchDynamicStats, showAuthModal, showProfile, saveTypingResult]);
+  }, [status, words, startNewTest, currentWord, history, activeWordIndex, errors, startTime, showAuthModal, showProfile, finishTest]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -279,10 +316,15 @@ function App() {
     return () => clearInterval(interval);
   }, [status, startTime, currentWord, history, errors, fetchDynamicStats]);
 
+  const handleTimeSelect = (time: number) => {
+    setSelectedTime(time);
+    setTimeLeft(time);
+  };
+
+  const isFocused = status === 'typing';
 
   const renderWords = () => {
     return words.map((word, wIdx) => {
-      // Determine what to display based on whether word is typed, currently typing, or future
       let typedWord = "";
       if (wIdx < activeWordIndex) {
         typedWord = history[wIdx];
@@ -293,11 +335,8 @@ function App() {
       const isCurrent = wIdx === activeWordIndex;
       const isTyped = wIdx < activeWordIndex;
       const characters = word.split('');
-      
-      // We also need to map extra characters typed beyond the word length
       const lettersToRender = Math.max(characters.length, typedWord.length);
 
-      // Determine class for whole word underlining or errors if it was submitted incorrectly
       let wordClass = "word";
       if (isTyped && typedWord !== word) {
         wordClass += " error-underline";
@@ -314,17 +353,13 @@ function App() {
 
             if (isTyped || isCurrent) {
               if (cIdx >= characters.length) {
-                // Extra character typed
                 charClass += " extra";
                 displayChar = typedChar;
               } else if (typedChar === undefined) {
-                // Not typed yet within the active word
                 charClass += "";
               } else if (typedChar === char) {
-                // Correctly typed
                 charClass += " correct";
               } else {
-                // Incorrectly typed
                 charClass += " incorrect";
               }
             }
@@ -336,7 +371,6 @@ function App() {
             );
           })}
           
-          {/* Space between words - handled conceptually as the right boundary */}
           {wIdx !== words.length - 1 && (
              <span className={`space ${isTyped ? 'correct' : ''}`}>&nbsp;</span>
           )}
@@ -346,8 +380,8 @@ function App() {
   };
 
   return (
-    <div className="typeblitz-container fade-in">
-      <header className="header">
+    <div className={`typeblitz-container fade-in ${isFocused ? 'focused' : ''}`}>
+      <header className={`header ${isFocused ? 'header-hidden' : ''}`}>
         <div className="logo">
           <span>type</span>blitz
         </div>
@@ -368,12 +402,40 @@ function App() {
         </div>
       </header>
 
+      {/* Time selector - hidden during typing */}
+      {status === 'idle' && (
+        <div className="time-selector fade-in">
+          {TIME_OPTIONS.map(t => (
+            <button
+              key={t}
+              className={`time-btn ${selectedTime === t ? 'active' : ''}`}
+              onClick={() => handleTimeSelect(t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Timer display - visible during typing */}
+      {status === 'typing' && (
+        <div className="timer-display">
+          {timeLeft}
+        </div>
+      )}
+
       <Stats wpm={wpm} accuracy={accuracy} visible={status === 'finished'} />
 
       {status !== 'finished' && (
         <div className="typing-area" ref={typingAreaRef}>
-          <Caret left={caretPos.left} top={caretPos.top} isTyping={status === 'typing'} />
-          {renderWords()}
+          <div
+            className="words-inner"
+            ref={wordsInnerRef}
+            style={{ transform: `translateY(-${scrollOffset}px)` }}
+          >
+            <Caret left={caretPos.left} top={caretPos.top} isTyping={status === 'typing'} />
+            {renderWords()}
+          </div>
         </div>
       )}
 
@@ -381,7 +443,6 @@ function App() {
         <div className="restart-hint fade-in">
           <div>Test complete! Press <span>Tab</span> to restart.</div>
           
-          {/* Cloud Save feedback */}
           {user && (
             <div className={`save-status ${isSaving ? 'saving' : saveSuccess ? 'success' : 'error'}`}>
               {isSaving && 'Saving to cloud...'}
@@ -397,11 +458,9 @@ function App() {
         </div>
       )}
       
-      {status !== 'finished' && (
-        <div className="restart-hint">
-          Press <span>Tab</span> to restart at any time.
-        </div>
-      )}
+      <div className={`restart-hint ${isFocused ? 'hint-dimmed' : ''}`}>
+        Press <span>Tab</span> to restart at any time.
+      </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       {showProfile && <Profile onClose={() => setShowProfile(false)} />}
