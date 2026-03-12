@@ -3,20 +3,28 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Initialize Firebase Admin SDK for Backend Token Verification
-// You must provide the path to your Service Account JSON file in your .env
+// Supports two modes:
+//   1. FIREBASE_SERVICE_ACCOUNT env var (JSON string) — for cloud deployments
+//   2. GOOGLE_APPLICATION_CREDENTIALS env var (file path) — for local development
 try {
   if (!admin.apps.length) {
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+      console.log('Firebase Admin initialized with FIREBASE_SERVICE_ACCOUNT.');
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       admin.initializeApp({
         credential: admin.credential.applicationDefault()
       });
-      console.log('Firebase Admin initialized with real credentials.');
+      console.log('Firebase Admin initialized with GOOGLE_APPLICATION_CREDENTIALS.');
     } else {
       console.warn('\n--- FIREBASE WARNING ---');
-      console.warn('Backend is missing GOOGLE_APPLICATION_CREDENTIALS.');
-      console.warn('Real JWT tokens cannot be verified until this is set.');
+      console.warn('Backend is missing Firebase credentials.');
+      console.warn('Set FIREBASE_SERVICE_ACCOUNT (JSON) or GOOGLE_APPLICATION_CREDENTIALS (file path).');
       console.warn('------------------------\n');
-      admin.initializeApp(); // Fallback empty initialization that will fail verifyIdToken
+      admin.initializeApp();
     }
   }
 } catch (error) {
