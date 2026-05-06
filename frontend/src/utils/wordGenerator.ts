@@ -25,12 +25,33 @@ export const COMMON_WORDS = [
 /**
  * Generates an array of random words from the common words list.
  * @param count - The number of words to generate.
+ * @param options - Optional flags for punctuation and numbers.
  * @returns An array of randomly selected words.
  */
-export function generateWords(count: number): string[] {
+export function generateWords(count: number, options?: { punctuation?: boolean, numbers?: boolean }): string[] {
   const result: string[] = [];
+  const punctuationMarks = [".", ",", "!", "?", ";", ":"];
+  
   for (let i = 0; i < count; i++) {
-    result.push(COMMON_WORDS[Math.floor(Math.random() * COMMON_WORDS.length)]);
+    let word = COMMON_WORDS[Math.floor(Math.random() * COMMON_WORDS.length)];
+    
+    // 10% chance to replace with a number if enabled
+    if (options?.numbers && Math.random() < 0.1) {
+      word = Math.floor(Math.random() * 1000).toString();
+    }
+    
+    // Add punctuation if enabled (15% chance)
+    if (options?.punctuation && Math.random() < 0.15) {
+      const mark = punctuationMarks[Math.floor(Math.random() * punctuationMarks.length)];
+      word += mark;
+    }
+    
+    // Randomly capitalize if punctuation is on (simulate sentences)
+    if (options?.punctuation && Math.random() < 0.1) {
+      word = word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    result.push(word);
   }
   return result;
 }

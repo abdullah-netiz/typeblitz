@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Profile.css';
 
+import { updateProfile } from 'firebase/auth';
+
 interface StatRecord {
   _id: string;
   wpm: number;
@@ -15,6 +17,8 @@ export default function Profile({ onClose }: { onClose: () => void }) {
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -40,6 +44,20 @@ export default function Profile({ onClose }: { onClose: () => void }) {
     fetchStats();
   }, [user]);
 
+  const handleUpdateName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setIsUpdating(true);
+    try {
+      await updateProfile(user, { displayName });
+      alert('Name updated successfully!');
+    } catch (err: any) {
+      setError('Failed to update name: ' + err.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Format date helper
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -52,9 +70,28 @@ export default function Profile({ onClose }: { onClose: () => void }) {
         <button className="close-btn" onClick={onClose}>&times;</button>
         
         <div className="profile-header">
-           <h2>{user?.email || 'Developer Profile'}</h2>
+           <h2>{user?.email}</h2>
            <button className="logout-btn" onClick={() => { logOut(); onClose(); }}>Sign Out</button>
         </div>
+
+        <form onSubmit={handleUpdateName} className="name-update-form">
+          <div className="form-group">
+            <label>Display Name</label>
+            <div className="input-group">
+              <input 
+                type="text" 
+                value={displayName} 
+                onChange={e => setDisplayName(e.target.value)} 
+                placeholder="Enter your name"
+              />
+              <button type="submit" disabled={isUpdating}>
+                {isUpdating ? 'Updating...' : 'Update'}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div className="stats-divider" />
 
         <h3>Recent Tests</h3>
         

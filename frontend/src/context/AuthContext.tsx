@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { type User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { type User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
 interface AuthContextType {
@@ -7,6 +7,8 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, pass: string) => Promise<void>;
   signUp: (email: string, pass: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -18,7 +20,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!auth) {
-      // Firebase not configured — skip auth, render app immediately
       setLoading(false);
       return;
     }
@@ -39,13 +40,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await createUserWithEmailAndPassword(auth, email, pass);
   };
 
+  const signInWithGoogle = async () => {
+    if (!auth) throw new Error('Firebase auth is not configured');
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  };
+
+  const signInWithGithub = async () => {
+    if (!auth) throw new Error('Firebase auth is not configured');
+    const provider = new GithubAuthProvider();
+    await signInWithPopup(auth, provider);
+  };
+
   const logOut = async () => {
     setUser(null);
     if (auth) await signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, logOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signInWithGoogle, signInWithGithub, logOut }}>
       {!loading && children}
     </AuthContext.Provider>
   );

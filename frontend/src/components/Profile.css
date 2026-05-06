@@ -7,10 +7,59 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
+
+.name-update-form {
+  margin-bottom: 2rem;
+}
+
+.name-update-form .form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.name-update-form .input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.name-update-form input {
+  flex: 1;
+  background-color: var(--bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  color: var(--text-color);
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+.name-update-form button {
+  background-color: var(--bg-surface);
+  color: var(--text-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+}
+
+.name-update-form button:hover {
+  border-color: var(--main-color);
+  color: var(--main-color);
+}
+
+.stats-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin-bottom: 2rem;
+}
+
 
 .profile-header h2 {
   color: var(--text-color);
