@@ -446,10 +446,19 @@ function App() {
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
           </button>
           
-          <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} title="Notifications">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-            <span className="dot" />
-          </button>
+          <div className="notification-nav">
+            <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)} title="Notifications">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span className="dot" />
+            </button>
+            {showNotifications && (
+              <div className="notifications-dropdown fade-in">
+                <div className="dropdown-header">Notifications</div>
+                <div className="notification-item">Welcome to TypeBlitz! Start typing to see your stats.</div>
+                <div className="notification-item dimmed">Join the leaderboard to compete with others.</div>
+              </div>
+            )}
+          </div>
 
           <div className="auth-controls">
             {user ? (
@@ -478,14 +487,6 @@ function App() {
           </div>
         </div>
       </header>
-
-      {showNotifications && (
-        <div className="notifications-dropdown fade-in">
-          <div className="dropdown-header">Notifications</div>
-          <div className="notification-item">Welcome to TypeBlitz! Start typing to see your stats.</div>
-          <div className="notification-item dimmed">Join the leaderboard to compete with others.</div>
-        </div>
-      )}
 
       <div className={`config-bar ${isFocused ? 'header-hidden' : ''}`}>
         <div className="config-group">
