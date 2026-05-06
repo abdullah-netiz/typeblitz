@@ -317,11 +317,12 @@ function App() {
     resize();
     window.addEventListener('resize', resize);
 
-    const spawnParticle = () => {
+    const spawnParticle = (side: 'left' | 'right') => {
+      const fromRight = side === 'right';
       particlesRef.current.push({
-        x: w * 0.95 + Math.random() * w * 0.05,
+        x: fromRight ? w * 0.95 + Math.random() * w * 0.05 : Math.random() * w * 0.05,
         y: h * 0.2 + Math.random() * h * 0.6,
-        vx: -(1.5 + Math.random() * 3),
+        vx: fromRight ? -(1.5 + Math.random() * 3) : (1.5 + Math.random() * 3),
         vy: (Math.random() - 0.5) * 0.6,
         life: 0,
         maxLife: 35 + Math.random() * 25,
@@ -342,7 +343,8 @@ function App() {
       const spawnRate = activity > 0.05 ? Math.min(wpmNow / 12, 10) * activity : 0;
 
       if (spawnRate > 0 && time - lastSpawn > 1000 / Math.max(spawnRate, 1)) {
-        spawnParticle();
+        spawnParticle('right');
+        spawnParticle('left');
         lastSpawn = time;
       }
 
@@ -359,16 +361,17 @@ function App() {
         const fadeOut = 1 - lifeRatio;
         const alpha = p.opacity * fadeIn * fadeOut * activity;
 
-        if (p.life >= p.maxLife || alpha < 0.005 || p.x < -20) {
+        if (p.life >= p.maxLife || alpha < 0.005 || p.x < -20 || p.x > w + 20) {
           particles.splice(i, 1);
           continue;
         }
 
-        // Draw streak
+        // Draw streak — direction-aware
         const streakLen = p.size * 4 * speedMult;
+        const tailX = p.vx < 0 ? p.x + streakLen : p.x - streakLen;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x + streakLen, p.y);
+        ctx.lineTo(tailX, p.y);
         ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
         ctx.lineWidth = p.size;
         ctx.lineCap = 'round';
