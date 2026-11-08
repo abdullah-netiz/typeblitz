@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 
 type StatsProps = {
   wpm: number;
@@ -6,40 +6,114 @@ type StatsProps = {
   accuracy: number;
   consistency?: number;
   visible: boolean;
+  isFailed?: boolean;
 };
 
-function getBadge(wpm: number, accuracy: number): { emoji: string; label: string; color: string } | null {
-  if (!wpm && !accuracy) return null;
-
-  // Perfect accuracy badge takes priority
-  if (accuracy === 100) {
-    return { emoji: '💎', label: 'Flawless', color: '#60a5fa' };
-  }
-
-  if (wpm >= 150) return { emoji: '⚡', label: 'Lightning', color: '#facc15' };
-  if (wpm >= 120) return { emoji: '🔥', label: 'Inferno', color: '#f97316' };
-  if (wpm >= 100) return { emoji: '🚀', label: 'Rocket', color: '#a78bfa' };
-  if (wpm >= 80) return { emoji: '🏎️', label: 'Speed Racer', color: '#f43f5e' };
-  if (wpm >= 60) return { emoji: '🐆', label: 'Cheetah', color: '#10b981' };
-  if (wpm >= 40) return { emoji: '🐇', label: 'Rabbit', color: '#34d399' };
-  return { emoji: '🐢', label: 'Turtle', color: '#8b949e' };
+interface BadgeConfig {
+  label: string;
+  color: string;
+  icon: ReactNode;
 }
 
-const Stats = memo(({ wpm, rawWpm, accuracy, consistency, visible }: StatsProps) => {
-  const badge = visible ? getBadge(wpm, accuracy) : null;
+function getBadge(wpm: number, accuracy: number, isFailed?: boolean): BadgeConfig | null {
+  if (isFailed || wpm <= 0 || wpm > 300) return null;
+
+  // Perfect accuracy badge takes priority if at least 40 WPM
+  if (accuracy === 100 && wpm >= 40) {
+    return {
+      label: 'Flawless',
+      color: '#38bdf8',
+      icon: (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 3h12l4 6-10 12L2 9z" />
+          <path d="M11 3 8 9l4 12 4-12-3-6" />
+          <path d="M2 9h20" />
+        </svg>
+      )
+    };
+  }
+
+  if (wpm >= 140) {
+    return {
+      label: 'Apex Typist',
+      color: '#facc15',
+      icon: (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      )
+    };
+  }
+
+  if (wpm >= 110) {
+    return {
+      label: 'Inferno',
+      color: '#f97316',
+      icon: (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+        </svg>
+      )
+    };
+  }
+
+  if (wpm >= 85) {
+    return {
+      label: 'Speedster',
+      color: '#a855f7',
+      icon: (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      )
+    };
+  }
+
+  if (wpm >= 60) {
+    return {
+      label: 'Rapid',
+      color: '#10b981',
+      icon: (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        </svg>
+      )
+    };
+  }
+
+  if (wpm >= 40) {
+    return {
+      label: 'Steady',
+      color: '#06b6d4',
+      icon: (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      )
+    };
+  }
+
+  return null;
+}
+
+const Stats = memo(({ wpm, rawWpm, accuracy, consistency, visible, isFailed }: StatsProps) => {
+  if (!visible) return null;
+
+  const displayWpm = isFailed ? 0 : wpm;
+  const displayRaw = isFailed ? 0 : (rawWpm ?? wpm);
+  const badge = getBadge(displayWpm, accuracy, isFailed);
 
   return (
-    <div className={`stats-container ${visible ? 'visible' : ''}`}>
-      <div className="stat-item tooltip">
+    <div className="stats-container visible fade-in">
+      <div className="stat-item">
         <span className="stat-label">wpm</span>
-        <span className="stat-value">{wpm}</span>
+        <span className="stat-value">{displayWpm}</span>
       </div>
-      {rawWpm !== undefined && rawWpm > 0 && (
-        <div className="stat-item">
-          <span className="stat-label">raw</span>
-          <span className="stat-value">{rawWpm}</span>
-        </div>
-      )}
+      <div className="stat-item">
+        <span className="stat-label">raw</span>
+        <span className="stat-value">{displayRaw}</span>
+      </div>
       <div className="stat-item">
         <span className="stat-label">acc</span>
         <span className="stat-value">{accuracy}%</span>
@@ -47,15 +121,15 @@ const Stats = memo(({ wpm, rawWpm, accuracy, consistency, visible }: StatsProps)
       {consistency !== undefined && (
         <div className="stat-item">
           <span className="stat-label">consistency</span>
-          <span className="stat-value">{consistency}%</span>
+          <span className="stat-value">{isFailed ? 0 : consistency}%</span>
         </div>
       )}
       {badge && (
         <div className="stat-item badge-item fade-in">
           <span className="stat-label">badge</span>
-          <div className="badge" style={{ '--badge-color': badge.color } as React.CSSProperties}>
-            <span className="badge-emoji">{badge.emoji}</span>
-            <span className="badge-label">{badge.label}</span>
+          <div className="badge-modern" style={{ '--badge-accent': badge.color } as React.CSSProperties}>
+            <span className="badge-icon-wrap">{badge.icon}</span>
+            <span className="badge-label-modern">{badge.label}</span>
           </div>
         </div>
       )}

@@ -13,24 +13,28 @@ export function calculateWPM(
   startTime: number,
   endTime: number
 ): { wpm: number; rawWpm: number; accuracy: number } {
-  const timeElapsedInMinutes = (endTime - startTime) / 60000;
+  const timeElapsedMs = Math.max(0, endTime - startTime);
 
-  if (timeElapsedInMinutes <= 0 || typedCharacters === 0) {
-    return { wpm: 0, rawWpm: 0, accuracy: 100 };
+  // If the test ended in under 1.5 seconds or typed fewer than 3 characters, rate is zero
+  if (timeElapsedMs < 1500 || typedCharacters < 3) {
+    const accuracy = typedCharacters > 0
+      ? Math.max(0, Math.min(100, Math.round(((typedCharacters - errors) / typedCharacters) * 100)))
+      : 100;
+    return { wpm: 0, rawWpm: 0, accuracy };
   }
 
-  // Raw WPM: (Total Keystrokes / 5) / Time (mins)
-  const rawWpm = Math.round(typedCharacters / 5 / timeElapsedInMinutes);
+  const timeElapsedInMinutes = timeElapsedMs / 60000;
+
+  // Raw WPM: (Total Keystrokes / 5) / Time (mins) - clamped to realistic bounds
+  const rawWpm = Math.min(300, Math.round((typedCharacters / 5) / timeElapsedInMinutes));
 
   // Net WPM: (Total Keystrokes - Errors) / 5 / Time (mins)
-  // We make sure net WPM doesn't drop below 0.
-  const wpm = Math.max(
-    0,
-    Math.round((typedCharacters - errors) / 5 / timeElapsedInMinutes)
+  const wpm = Math.min(
+    300,
+    Math.max(0, Math.round(((typedCharacters - errors) / 5) / timeElapsedInMinutes))
   );
 
   // Accuracy: Correct Characters / Total Typed Characters
-  // Note: this represents raw character accuracy.
   const correctCharacters = Math.max(0, typedCharacters - errors);
   const accuracy = Math.round((correctCharacters / typedCharacters) * 100);
 

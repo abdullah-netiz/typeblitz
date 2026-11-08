@@ -60,7 +60,13 @@ export default function Leaderboard({ onClose }: { onClose: () => void }) {
                 className={`leaderboard-row ${entry.rank === 1 ? 'rank-1' : ''} ${entry.rank === 2 ? 'rank-2' : ''} ${entry.rank === 3 ? 'rank-3' : ''}`}
               >
                 <span className="lb-rank">
-                  {entry.rank === 1 ? '👑' : entry.rank}
+                  {entry.rank === 1 ? (
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style={{ display: 'inline-block', verticalAlign: 'middle', color: '#eab308' }}>
+                      <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 14h14v2H5v-2z" />
+                    </svg>
+                  ) : (
+                    entry.rank
+                  )}
                 </span>
                 <span className="lb-name">
                   {entry.displayName}

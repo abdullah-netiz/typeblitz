@@ -105,6 +105,7 @@ export function getPersonalBest(duration: number, mode: string = 'words'): PBRun
 }
 
 export function savePersonalBest(pb: PBRun): boolean {
+  if (pb.wpm <= 0 || pb.wpm > 300) return false;
   try {
     const current = getPersonalBest(pb.duration, pb.mode);
     if (!current || pb.wpm > current.wpm) {

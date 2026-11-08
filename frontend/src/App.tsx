@@ -213,27 +213,33 @@ function App() {
     setStatus('finished');
     const endTime = Date.now();
     const timeTaken = endTime - currentStartTime;
-    let totalTyped = 0;
+    const isFailed = Boolean(failureReason);
 
+    let totalTyped = 0;
     finalHist.forEach((word) => {
       totalTyped += word.length + 1;
     });
 
-    const stats = calculateWPM(totalTyped, currentErr, currentStartTime, endTime);
-    setWpm(stats.wpm);
-    setRawWpm(stats.rawWpm);
-    setAccuracy(stats.accuracy);
-    const cons = cadenceTrackerRef.current.getConsistency();
-    setConsistency(cons);
-    if (failureReason) {
-      setSuddenDeathFailed(failureReason);
+    if (isFailed) {
+      setWpm(0);
+      setRawWpm(0);
+      setAccuracy(0);
+      setConsistency(0);
+      setSuddenDeathFailed(failureReason || 'Failed');
+    } else {
+      const stats = calculateWPM(totalTyped, currentErr, currentStartTime, endTime);
+      setWpm(stats.wpm);
+      setRawWpm(stats.rawWpm);
+      setAccuracy(stats.accuracy);
+      const cons = cadenceTrackerRef.current.getConsistency();
+      setConsistency(cons);
+      setSuddenDeathFailed(null);
+      saveTypingResult(stats.wpm, stats.accuracy, timeTaken, finalHist.length);
     }
 
     // Capture post-test keyboard cadence analytics
     const analytics = cadenceTrackerRef.current.getAnalytics();
     setHeatmapAnalytics(analytics);
-
-    saveTypingResult(stats.wpm, stats.accuracy, timeTaken, finalHist.length);
   }, [saveTypingResult]);
 
   // --- Smooth caret positioning via rAF ---
@@ -722,14 +728,19 @@ function App() {
             className={`mode-btn ${mode === 'zen' ? 'active' : ''}`}
             onClick={() => handleModeSelect('zen')}
           >
-            zen mode 🧘
+            zen mode
           </button>
           <button
             className={`sudden-death-btn ${suddenDeath ? 'active' : ''}`}
             onClick={() => setSuddenDeath(!suddenDeath)}
             title="Sudden Death: 1 mistake or backspace = instant failure!"
           >
-            <span>💀</span> Sudden Death
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span>Sudden Death</span>
           </button>
         </div>
 
@@ -841,7 +852,16 @@ function App() {
       )}
 
       {/* Main Stats Output */}
-      <Stats wpm={wpm} rawWpm={rawWpm} accuracy={accuracy} consistency={consistency} visible={status === 'finished'} />
+      {status === 'finished' && (
+        <Stats
+          wpm={wpm}
+          rawWpm={rawWpm}
+          accuracy={accuracy}
+          consistency={consistency}
+          visible={true}
+          isFailed={Boolean(suddenDeathFailed)}
+        />
+      )}
 
       {/* Post-Test Key Burst Heatmap */}
       {status === 'finished' && heatmapAnalytics && (

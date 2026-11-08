@@ -28,7 +28,7 @@ const GhostRacer = memo(({ userProgress, ghostProgress, userWpm, pbWpm, visible 
         </div>
         <div className="racer-label ghost-label">
           <span className="dot ghost-dot" />
-          <span>PB Ghost: {pbWpm} WPM</span>
+          <span>PB Pace: {pbWpm} WPM</span>
         </div>
       </div>
 
@@ -44,13 +44,13 @@ const GhostRacer = memo(({ userProgress, ghostProgress, userWpm, pbWpm, visible 
           style={{ width: `${Math.min(100, Math.max(0, ghostProgress))}%` }}
         />
 
-        {/* Ghost runner pin */}
+        {/* Ghost runner pin - sleek minimal PB pill */}
         <div
           className="ghost-pin"
-          style={{ left: `${Math.min(99, Math.max(1, ghostProgress))}%` }}
-          title={`Ghost PB (${pbWpm} WPM)`}
+          style={{ left: `${Math.min(98, Math.max(2, ghostProgress))}%` }}
+          title={`Personal Best: ${pbWpm} WPM`}
         >
-          👻
+          <span className="ghost-pin-tag">PB</span>
         </div>
       </div>
     </div>

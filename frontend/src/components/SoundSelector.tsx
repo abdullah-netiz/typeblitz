@@ -1,15 +1,61 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { soundEngine, type SoundProfile } from '../audio/soundEngine';
 
 interface SoundSelectorProps {
   onProfileChange?: (profile: SoundProfile) => void;
 }
 
-const PROFILES: { id: SoundProfile; label: string; desc: string; icon: string }[] = [
-  { id: 'cream-linear', label: 'Cream Linear', desc: 'Soft & thocky bottom-out', icon: '🧈' },
-  { id: 'holy-panda', label: 'Holy Panda', desc: 'Tactile bump & crisp snap', icon: '🐼' },
-  { id: 'model-m', label: 'IBM Model M', desc: 'Buckling spring metallic click', icon: '⌨️' },
-  { id: 'off', label: 'Muted', desc: 'Silent mode', icon: '🔇' },
+interface ProfileConfig {
+  id: SoundProfile;
+  label: string;
+  desc: string;
+  icon: ReactNode;
+}
+
+const PROFILES: ProfileConfig[] = [
+  {
+    id: 'cream-linear',
+    label: 'Cream Linear',
+    desc: 'Soft & thocky bottom-out',
+    icon: (
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 12h16M4 6h16M4 18h16" />
+      </svg>
+    )
+  },
+  {
+    id: 'holy-panda',
+    label: 'Holy Panda',
+    desc: 'Tactile bump & crisp snap',
+    icon: (
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 12h5l3-7 4 14 3-7h5" />
+      </svg>
+    )
+  },
+  {
+    id: 'model-m',
+    label: 'IBM Model M',
+    desc: 'Buckling spring metallic click',
+    icon: (
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+      </svg>
+    )
+  },
+  {
+    id: 'off',
+    label: 'Muted',
+    desc: 'Silent mode',
+    icon: (
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <line x1="23" y1="9" x2="17" y2="15" />
+        <line x1="17" y1="9" x2="23" y2="15" />
+      </svg>
+    )
+  },
 ];
 
 export default function SoundSelector({ onProfileChange }: SoundSelectorProps) {
@@ -46,6 +92,7 @@ export default function SoundSelector({ onProfileChange }: SoundSelectorProps) {
   };
 
   const currentConfig = PROFILES.find(p => p.id === profile) || PROFILES[0];
+  const isMuted = profile === 'off';
 
   return (
     <div className="sound-selector-wrapper" ref={dropdownRef}>
@@ -54,13 +101,26 @@ export default function SoundSelector({ onProfileChange }: SoundSelectorProps) {
         onClick={() => setIsOpen(!isOpen)}
         title="Tactile Audio Profiles"
       >
-        <span className="sound-icon">{currentConfig.icon}</span>
+        <span className="sound-svg-icon">
+          {isMuted ? (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+          )}
+        </span>
         <span className="sound-label-compact">{currentConfig.label}</span>
       </button>
 
       {isOpen && (
         <div className="sound-dropdown-menu fade-in">
-          <div className="dropdown-title">Tactile Audio (Web Audio API)</div>
+          <div className="dropdown-title">Tactile Audio Profiles</div>
 
           <div className="sound-profiles-list">
             {PROFILES.map((p) => {
@@ -71,7 +131,7 @@ export default function SoundSelector({ onProfileChange }: SoundSelectorProps) {
                   className={`sound-profile-item ${isSelected ? 'active' : ''}`}
                   onClick={() => selectProfile(p.id)}
                 >
-                  <span className="profile-icon">{p.icon}</span>
+                  <span className="profile-icon-svg">{p.icon}</span>
                   <div className="profile-meta">
                     <span className="profile-title">{p.label}</span>
                     <span className="profile-desc">{p.desc}</span>
@@ -82,7 +142,7 @@ export default function SoundSelector({ onProfileChange }: SoundSelectorProps) {
             })}
           </div>
 
-          {profile !== 'off' && (
+          {!isMuted && (
             <div className="volume-control-box">
               <div className="volume-label">
                 <span>Volume</span>
