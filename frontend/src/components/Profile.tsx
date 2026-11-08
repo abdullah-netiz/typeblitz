@@ -34,8 +34,8 @@ export default function Profile({ onClose }: { onClose: () => void }) {
         if (!res.ok) throw new Error('Failed to load stats');
         const data = await res.json();
         setStats(data);
-      } catch (err: any) {
-        setError(err.message || 'Error connecting to backend');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Error connecting to backend');
       } finally {
         setLoading(false);
       }
@@ -51,8 +51,8 @@ export default function Profile({ onClose }: { onClose: () => void }) {
     try {
       await updateProfile(user, { displayName });
       alert('Name updated successfully!');
-    } catch (err: any) {
-      setError('Failed to update name: ' + err.message);
+    } catch (err: unknown) {
+      setError('Failed to update name: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setIsUpdating(false);
     }

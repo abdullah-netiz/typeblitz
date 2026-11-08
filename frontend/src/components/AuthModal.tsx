@@ -22,8 +22,8 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
         await signUp(email, password);
       }
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed.');
     } finally {
       setLoading(false);
     }
@@ -36,8 +36,8 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
       if (provider === 'google') await signInWithGoogle();
       else await signInWithGithub();
       onClose();
-    } catch (err: any) {
-      setError(err.message || `Failed to sign in with ${provider}`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : `Failed to sign in with ${provider}`);
     } finally {
       setLoading(false);
     }

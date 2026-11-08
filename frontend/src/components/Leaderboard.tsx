@@ -21,8 +21,8 @@ export default function Leaderboard({ onClose }: { onClose: () => void }) {
         if (!res.ok) throw new Error('Failed to load leaderboard');
         const data = await res.json();
         setEntries(data);
-      } catch (err: any) {
-        setError(err.message || 'Error loading leaderboard');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Error loading leaderboard');
       } finally {
         setLoading(false);
       }
