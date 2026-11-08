@@ -15,20 +15,56 @@ connectRedis();
 
 const app = express();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:5173'];
+// Allowed origins
+const defaultAllowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://www.typeblitz.app',
+  'https://typeblitz.app',
+];
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+const envOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...envOrigins]));
+
+// CORS configuration supporting custom domains, Vercel preview URLs, and localhost
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const isExplicitlyAllowed = allowedOrigins.includes(origin);
+      const isTypeblitzDomain = /^https:\/\/(www\.)?typeblitz\.app$/.test(origin);
+      const isVercelDomain = /^https:\/\/[a-zA-Z0-9_-]+(\.vercel\.app)$/.test(origin);
+      const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+      if (isExplicitlyAllowed || isTypeblitzDomain || isVercelDomain || isLocalhost) {
+        return callback(null, true);
+      }
+
+      console.warn(`Blocked by CORS: origin ${origin} is not in allowed list.`);
+      return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// Pre-flight handling
+app.options('*', cors());
+
 app.use(express.json());
 
 // Mount Routes
 app.use('/api/results', resultRoutes);
 
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', message: 'Typeblitz backend is running.' });
 });
 
