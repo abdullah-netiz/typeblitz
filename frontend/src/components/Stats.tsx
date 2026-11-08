@@ -100,8 +100,8 @@ function getBadge(wpm: number, accuracy: number, isFailed?: boolean): BadgeConfi
 const Stats = memo(({ wpm, rawWpm, accuracy, consistency, visible, isFailed }: StatsProps) => {
   if (!visible) return null;
 
-  const displayWpm = isFailed ? 0 : wpm;
-  const displayRaw = isFailed ? 0 : (rawWpm ?? wpm);
+  const displayWpm = Math.min(300, Math.max(0, Math.round(wpm)));
+  const displayRaw = Math.min(300, Math.max(0, Math.round(rawWpm ?? wpm)));
   const badge = getBadge(displayWpm, accuracy, isFailed);
 
   return (
@@ -121,7 +121,7 @@ const Stats = memo(({ wpm, rawWpm, accuracy, consistency, visible, isFailed }: S
       {consistency !== undefined && (
         <div className="stat-item">
           <span className="stat-label">consistency</span>
-          <span className="stat-value">{isFailed ? 0 : consistency}%</span>
+          <span className="stat-value">{Math.round(consistency)}%</span>
         </div>
       )}
       {badge && (

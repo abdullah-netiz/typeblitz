@@ -95,9 +95,21 @@ export interface PBRun {
 export function getPersonalBest(duration: number, mode: string = 'words'): PBRun | null {
   try {
     const raw = localStorage.getItem(`typeblitz_pb_${mode}_${duration}`);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.wpm === 'number' && parsed.wpm > 0 && parsed.wpm <= 300) {
+        return parsed;
+      }
+      localStorage.removeItem(`typeblitz_pb_${mode}_${duration}`);
+    }
     const generic = localStorage.getItem('typeblitz_pb_words_30');
-    if (generic) return JSON.parse(generic);
+    if (generic) {
+      const parsed = JSON.parse(generic);
+      if (parsed && typeof parsed.wpm === 'number' && parsed.wpm > 0 && parsed.wpm <= 300) {
+        return parsed;
+      }
+      localStorage.removeItem('typeblitz_pb_words_30');
+    }
   } catch {
     // ignore
   }

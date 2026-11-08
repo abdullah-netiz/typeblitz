@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import './App.css';
 import Stats from './components/Stats';
 import AuthModal from './components/AuthModal';
@@ -6,7 +6,6 @@ import Profile from './components/Profile';
 import Leaderboard from './components/Leaderboard';
 import ThemeSelector from './components/ThemeSelector';
 import SoundSelector from './components/SoundSelector';
-import GhostRacer from './components/GhostRacer';
 import KeyHeatmap, { type HeatmapAnalytics } from './components/KeyHeatmap';
 import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
@@ -14,7 +13,7 @@ import { calculateWPM } from './utils/wpmCalculator';
 import { getRandomCodeWords, type TypingMode } from './utils/codeSnippets';
 import { applyTheme, DEFAULT_THEME } from './theme/themes';
 import { soundEngine } from './audio/soundEngine';
-import { CadenceTracker, getPersonalBest, savePersonalBest } from './utils/cadenceTracker';
+import { CadenceTracker, savePersonalBest } from './utils/cadenceTracker';
 
 const TIME_OPTIONS = [15, 30, 60, 120] as const;
 const WORDS_PER_SECOND = 3;
@@ -59,12 +58,6 @@ function App() {
   const [accuracy, setAccuracy] = useState(100);
   const [consistency, setConsistency] = useState(100);
 
-  // Ghost racer metrics
-  const [pbWpm, setPbWpm] = useState<number>(() => {
-    const pb = getPersonalBest(30, 'words');
-    return pb && pb.wpm > 0 ? pb.wpm : 75;
-  });
-  const [ghostProgress, setGhostProgress] = useState(0);
 
   // Key burst heatmap & analytics
   const cadenceTrackerRef = useRef(new CadenceTracker());
@@ -112,18 +105,7 @@ function App() {
     applyTheme(themeId);
   };
 
-  // Total characters in current test
-  const totalCharactersInTest = words.reduce((acc, w) => acc + w.length + 1, 0) || 1;
 
-  // Derive live user progress %
-  const userProgress = useMemo(() => {
-    let typedChars = 0;
-    history.forEach((w) => {
-      typedChars += w.length + 1;
-    });
-    typedChars += currentWord.length;
-    return Math.min(100, (typedChars / totalCharactersInTest) * 100);
-  }, [history, currentWord, totalCharactersInTest]);
 
   // --- Start / Reset Test Helper ---
   const startTestWith = useCallback((
@@ -158,11 +140,7 @@ function App() {
     setSaveSuccess(null);
     setIsSaving(false);
     setSuddenDeathFailed(null);
-    setGhostProgress(0);
     setHeatmapAnalytics(null);
-
-    const pb = getPersonalBest(targetTime, targetMode);
-    setPbWpm(pb && pb.wpm > 0 ? pb.wpm : 75);
 
     cadenceTrackerRef.current.reset();
     scrollOffsetRef.current = 0;
@@ -220,19 +198,16 @@ function App() {
       totalTyped += word.length + 1;
     });
 
+    const stats = calculateWPM(totalTyped, currentErr, currentStartTime, endTime);
+    setWpm(stats.wpm);
+    setRawWpm(stats.rawWpm);
+    setAccuracy(stats.accuracy);
+    const cons = cadenceTrackerRef.current.getConsistency();
+    setConsistency(cons);
+
     if (isFailed) {
-      setWpm(0);
-      setRawWpm(0);
-      setAccuracy(0);
-      setConsistency(0);
-      setSuddenDeathFailed(failureReason || 'Failed');
+      setSuddenDeathFailed(failureReason || 'Sudden Death failed');
     } else {
-      const stats = calculateWPM(totalTyped, currentErr, currentStartTime, endTime);
-      setWpm(stats.wpm);
-      setRawWpm(stats.rawWpm);
-      setAccuracy(stats.accuracy);
-      const cons = cadenceTrackerRef.current.getConsistency();
-      setConsistency(cons);
       setSuddenDeathFailed(null);
       saveTypingResult(stats.wpm, stats.accuracy, timeTaken, finalHist.length);
     }
@@ -327,15 +302,10 @@ function App() {
           }
         }
 
-        // Ghost progress: based on PB WPM
-        const pbCps = (pbWpm * 5) / 60;
-        const ghostChars = elapsed * pbCps;
-        const gPct = Math.min(100, (ghostChars / totalCharactersInTest) * 100);
-        setGhostProgress(gPct);
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [status, startTime, selectedTime, history, currentWord, errors, finishTest, mode, pbWpm, totalCharactersInTest]);
+  }, [status, startTime, selectedTime, history, currentWord, errors, finishTest, mode]);
 
   // --- Keyboard handler with Tactile Audio & Sudden Death ---
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -812,16 +782,6 @@ function App() {
         </div>
       )}
 
-      {/* Ghost / Shadow Racer Progress Bar (when typing) */}
-      {status === 'typing' && (
-        <GhostRacer
-          userProgress={userProgress}
-          ghostProgress={ghostProgress}
-          userWpm={wpm}
-          pbWpm={pbWpm}
-          visible={true}
-        />
-      )}
 
       {/* Live Timer or Zen HUD */}
       {status === 'typing' && mode !== 'zen' && (

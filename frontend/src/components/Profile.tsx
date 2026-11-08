@@ -25,6 +25,19 @@ export default function Profile({ onClose }: { onClose: () => void }) {
       if (!user) return;
       try {
         const token = await user.getIdToken();
+
+        // Sync display name with backend MongoDB automatically
+        if (user.displayName) {
+          fetch(`${import.meta.env.VITE_API_URL}/api/results/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ displayName: user.displayName })
+          }).catch(() => {});
+        }
+
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/results/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -46,10 +59,23 @@ export default function Profile({ onClose }: { onClose: () => void }) {
 
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !displayName.trim()) return;
     setIsUpdating(true);
     try {
-      await updateProfile(user, { displayName });
+      const trimmed = displayName.trim();
+      await updateProfile(user, { displayName: trimmed });
+      const token = await user.getIdToken(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/results/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ displayName: trimmed })
+      });
+      if (!res.ok) {
+        throw new Error('Failed to update name on backend');
+      }
       alert('Name updated successfully!');
     } catch (err: unknown) {
       setError('Failed to update name: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -99,11 +125,11 @@ export default function Profile({ onClose }: { onClose: () => void }) {
           {loading && <p className="loading-text">Loading your history...</p>}
           {error && <p className="error-text">{error}</p>}
           
-          {!loading && !error && stats.length === 0 && (
+          {!loading && !error && stats.filter(s => s.wpm > 0 && s.wpm <= 300).length === 0 && (
             <p className="empty-text">No typing tests recorded yet. Start typing!</p>
           )}
 
-          {!loading && !error && stats.length > 0 && (
+          {!loading && !error && stats.filter(s => s.wpm > 0 && s.wpm <= 300).length > 0 && (
             <table className="stats-table">
               <thead>
                 <tr>
@@ -114,7 +140,7 @@ export default function Profile({ onClose }: { onClose: () => void }) {
                 </tr>
               </thead>
               <tbody>
-                {stats.map(stat => (
+                {stats.filter(s => s.wpm > 0 && s.wpm <= 300).map(stat => (
                   <tr key={stat._id}>
                     <td className="wpm-cell">{stat.wpm.toFixed(0)}</td>
                     <td>{stat.accuracy.toFixed(0)}%</td>

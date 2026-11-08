@@ -1,5 +1,9 @@
 .profile-content {
   max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   font-family: var(--font-sans);
 }
 
@@ -89,6 +93,25 @@
   margin-bottom: 1rem;
 }
 
+.stats-list {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.stats-list::-webkit-scrollbar {
+  width: 6px;
+}
+.stats-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.stats-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
 .stats-table {
   width: 100%;
   border-collapse: collapse;
@@ -96,6 +119,10 @@
 }
 
 .stats-table th {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-surface, #18181b);
+  z-index: 1;
   color: var(--sub-color);
   font-size: 0.8rem;
   font-weight: normal;

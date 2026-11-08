@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
   user?: {
     uid: string;
     email?: string;
+    name?: string;
   };
 }
 
@@ -26,6 +27,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
+      name: decodedToken.name,
     };
     
     next();

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f172a" />
+      <stop offset="1" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="tbGrad" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38bdf8" />
+      <stop offset="1" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="38" y1="16" x2="56" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f59e0b" />
+      <stop offset="1" stop-color="#f43f5e" />
+    </linearGradient>
+  </defs>
+  <!-- Squircle background -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)" />
+  <rect x="1" y="1" width="62" height="62" rx="15" stroke="#38bdf8" stroke-opacity="0.25" stroke-width="2" />
+  
+  <!-- 't' glyph -->
+  <path d="M16 18 H28 V24 H24 V38 C24 41 26 43 29 43 C30.5 43 31.8 42.6 32.5 42 L34 46 C32.5 47.3 30.2 48 28 48 C22.5 48 19 44.5 19 38 V24 H16 V18 Z" fill="url(#tbGrad)" />
+  
+  <!-- 'b' glyph -->
+  <path d="M35 15 H40 V27.2 C41.4 25.8 43.4 25 45.8 25 C50.5 25 54 28.8 54 34.5 C54 40.2 50.4 44 45.8 44 C43.4 44 41.4 43.2 40 41.8 V48 H35 V15 Z M40 34.5 C40 37.8 42.1 40 44.8 40 C47.5 40 49.2 37.8 49.2 34.5 C49.2 31.2 47.5 29 44.8 29 C42.1 29 40 31.2 40 34.5 Z" fill="#ffffff" fill-opacity="0.95" />
+  
+  <!-- Speed lightning accent -->
+  <polygon points="52,10 45,21 49.5,21 44,28 54,19 49.5,19" fill="url(#accentGrad)" />
+</svg>
