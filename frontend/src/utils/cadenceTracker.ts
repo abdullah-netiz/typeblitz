@@ -4,6 +4,7 @@ export class CadenceTracker {
   private keyStats: Record<string, { typed: number; errors: number }> = {};
   private transitions: Record<string, number[]> = {};
   private fingerErrors: Record<string, number> = {};
+  private intervals: number[] = [];
   private lastChar: string | null = null;
   private lastCharTime: number | null = null;
 
@@ -11,6 +12,7 @@ export class CadenceTracker {
     this.keyStats = {};
     this.transitions = {};
     this.fingerErrors = {};
+    this.intervals = [];
     this.lastChar = null;
     this.lastCharTime = null;
   }
@@ -31,11 +33,12 @@ export class CadenceTracker {
       this.fingerErrors[finger] = (this.fingerErrors[finger] || 0) + 1;
     }
 
-    // 2. Transition latency
+    // 2. Transition latency & cadence interval
     if (this.lastChar !== null && this.lastCharTime !== null) {
       const dt = timestamp - this.lastCharTime;
-      // Filter out pauses > 1200ms
-      if (dt > 10 && dt < 1200) {
+      // Filter out long pauses (> 1500ms) for consistency calculation
+      if (dt > 10 && dt < 1500) {
+        this.intervals.push(dt);
         const pair = `${this.lastChar}${char}`.toLowerCase();
         if (!this.transitions[pair]) {
           this.transitions[pair] = [];
@@ -46,6 +49,16 @@ export class CadenceTracker {
 
     this.lastChar = char;
     this.lastCharTime = timestamp;
+  }
+
+  public getConsistency(): number {
+    if (this.intervals.length < 2) return 100;
+    const mean = this.intervals.reduce((a, b) => a + b, 0) / this.intervals.length;
+    if (mean <= 0) return 100;
+    const variance = this.intervals.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / this.intervals.length;
+    const stdDev = Math.sqrt(variance);
+    const cv = stdDev / mean;
+    return Math.max(0, Math.min(100, Math.round((1 - Math.min(1, cv)) * 100)));
   }
 
   public getAnalytics(): HeatmapAnalytics {
@@ -83,7 +96,6 @@ export function getPersonalBest(duration: number, mode: string = 'words'): PBRun
   try {
     const raw = localStorage.getItem(`typeblitz_pb_${mode}_${duration}`);
     if (raw) return JSON.parse(raw);
-    // Fallback to generic PB
     const generic = localStorage.getItem('typeblitz_pb_words_30');
     if (generic) return JSON.parse(generic);
   } catch {

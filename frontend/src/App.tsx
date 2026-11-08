@@ -55,7 +55,9 @@ function App() {
   const [errors, setErrors] = useState<number>(0);
 
   const [wpm, setWpm] = useState(0);
+  const [rawWpm, setRawWpm] = useState(0);
   const [accuracy, setAccuracy] = useState(100);
+  const [consistency, setConsistency] = useState(100);
 
   // Ghost racer metrics
   const [pbWpm, setPbWpm] = useState<number>(() => {
@@ -150,7 +152,9 @@ function App() {
     setZenElapsed(0);
     setErrors(0);
     setWpm(0);
+    setRawWpm(0);
     setAccuracy(100);
+    setConsistency(100);
     setSaveSuccess(null);
     setIsSaving(false);
     setSuddenDeathFailed(null);
@@ -217,7 +221,10 @@ function App() {
 
     const stats = calculateWPM(totalTyped, currentErr, currentStartTime, endTime);
     setWpm(stats.wpm);
+    setRawWpm(stats.rawWpm);
     setAccuracy(stats.accuracy);
+    const cons = cadenceTrackerRef.current.getConsistency();
+    setConsistency(cons);
     if (failureReason) {
       setSuddenDeathFailed(failureReason);
     }
@@ -834,7 +841,7 @@ function App() {
       )}
 
       {/* Main Stats Output */}
-      <Stats wpm={wpm} accuracy={accuracy} visible={status === 'finished'} />
+      <Stats wpm={wpm} rawWpm={rawWpm} accuracy={accuracy} consistency={consistency} visible={status === 'finished'} />
 
       {/* Post-Test Key Burst Heatmap */}
       {status === 'finished' && heatmapAnalytics && (

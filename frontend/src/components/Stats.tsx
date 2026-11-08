@@ -2,7 +2,9 @@ import { memo } from 'react';
 
 type StatsProps = {
   wpm: number;
+  rawWpm?: number;
   accuracy: number;
+  consistency?: number;
   visible: boolean;
 };
 
@@ -23,7 +25,7 @@ function getBadge(wpm: number, accuracy: number): { emoji: string; label: string
   return { emoji: '🐢', label: 'Turtle', color: '#8b949e' };
 }
 
-const Stats = memo(({ wpm, accuracy, visible }: StatsProps) => {
+const Stats = memo(({ wpm, rawWpm, accuracy, consistency, visible }: StatsProps) => {
   const badge = visible ? getBadge(wpm, accuracy) : null;
 
   return (
@@ -32,10 +34,22 @@ const Stats = memo(({ wpm, accuracy, visible }: StatsProps) => {
         <span className="stat-label">wpm</span>
         <span className="stat-value">{wpm}</span>
       </div>
+      {rawWpm !== undefined && rawWpm > 0 && (
+        <div className="stat-item">
+          <span className="stat-label">raw</span>
+          <span className="stat-value">{rawWpm}</span>
+        </div>
+      )}
       <div className="stat-item">
         <span className="stat-label">acc</span>
         <span className="stat-value">{accuracy}%</span>
       </div>
+      {consistency !== undefined && (
+        <div className="stat-item">
+          <span className="stat-label">consistency</span>
+          <span className="stat-value">{consistency}%</span>
+        </div>
+      )}
       {badge && (
         <div className="stat-item badge-item fade-in">
           <span className="stat-label">badge</span>

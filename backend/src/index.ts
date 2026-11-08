@@ -30,6 +30,7 @@ const envOrigins = process.env.ALLOWED_ORIGINS
 const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...envOrigins]));
 
 // CORS configuration supporting custom domains, Vercel preview URLs, and localhost
+// (In Express 5, app.use(cors(...)) handles both regular and OPTIONS preflight requests)
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -47,17 +48,14 @@ app.use(
         return callback(null, true);
       }
 
-      console.warn(`Blocked by CORS: origin ${origin} is not in allowed list.`);
-      return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
+      console.warn(`Blocked by CORS: origin ${origin} is not allowed.`);
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-
-// Pre-flight handling
-app.options('*', cors());
 
 app.use(express.json());
 
