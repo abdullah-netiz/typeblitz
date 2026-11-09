@@ -3,10 +3,18 @@ export interface KeyStats {
   errors: number;
 }
 
+export interface SluggishPair {
+  pair: string;
+  avgTimeMs: number;
+  slowdownFactor: number;
+  description: string;
+}
+
 export interface HeatmapAnalytics {
   keyStats: Record<string, KeyStats>;
-  sluggishPairs: { pair: string; avgTimeMs: number }[];
+  sluggishPairs: SluggishPair[];
   fingerErrors: Record<string, number>;
+  averageTransitionMs: number;
 }
 
 export function getKeyColor(stats?: KeyStats): string {

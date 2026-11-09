@@ -1,10 +1,11 @@
-import { type HeatmapAnalytics, getFingerForChar } from './heatmapUtils';
+import { type HeatmapAnalytics, type SluggishPair, getFingerForChar } from './heatmapUtils';
 
 export class CadenceTracker {
   private keyStats: Record<string, { typed: number; errors: number }> = {};
   private transitions: Record<string, number[]> = {};
   private fingerErrors: Record<string, number> = {};
   private intervals: number[] = [];
+  private keystrokeTimestamps: number[] = [];
   private lastChar: string | null = null;
   private lastCharTime: number | null = null;
 
@@ -13,12 +14,14 @@ export class CadenceTracker {
     this.transitions = {};
     this.fingerErrors = {};
     this.intervals = [];
+    this.keystrokeTimestamps = [];
     this.lastChar = null;
     this.lastCharTime = null;
   }
 
   public recordKeystroke(char: string, isError: boolean, timestamp: number = Date.now()) {
     const key = char === ' ' ? 'space' : char.toLowerCase();
+    this.keystrokeTimestamps.push(timestamp);
 
     // 1. Key stats
     if (!this.keyStats[key]) {
@@ -36,8 +39,8 @@ export class CadenceTracker {
     // 2. Transition latency & cadence interval
     if (this.lastChar !== null && this.lastCharTime !== null) {
       const dt = timestamp - this.lastCharTime;
-      // Filter out long pauses (> 1500ms) for consistency calculation
-      if (dt > 10 && dt < 1500) {
+      // Filter out long pauses (> 2000ms) for transition cadence
+      if (dt > 10 && dt < 2000) {
         this.intervals.push(dt);
         const pair = `${this.lastChar}${char}`.toLowerCase();
         if (!this.transitions[pair]) {
@@ -51,34 +54,101 @@ export class CadenceTracker {
     this.lastCharTime = timestamp;
   }
 
-  public getConsistency(): number {
-    if (this.intervals.length < 2) return 100;
-    const mean = this.intervals.reduce((a, b) => a + b, 0) / this.intervals.length;
-    if (mean <= 0) return 100;
-    const variance = this.intervals.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / this.intervals.length;
-    const stdDev = Math.sqrt(variance);
-    const cv = stdDev / mean;
-    return Math.max(0, Math.min(100, Math.round((1 - Math.min(1, cv)) * 100)));
-  }
+  /**
+   * Consistency calculation following Monkeytype's statistical algorithm:
+   * 1. Samples raw keystrokes into 1-second time slices across the test.
+   * 2. Calculates per-second raw WPM.
+   * 3. Calculates the Mean (avg) and Standard Deviation (sigma).
+   * 4. Computes the Coefficient of Variation (CoV = sigma / mean).
+   * 5. Maps to a 0–100% scale: (1 - CoV) * 100.
+   */
+  public getConsistency(testStartTime?: number, testEndTime?: number): number {
+    if (this.keystrokeTimestamps.length < 4) return 100;
 
-  public getAnalytics(): HeatmapAnalytics {
-    // Calculate sluggish transition pairs (min 2 occurrences or slowest pairs)
-    const sluggishPairs: { pair: string; avgTimeMs: number }[] = [];
+    const start = testStartTime ?? this.keystrokeTimestamps[0];
+    const end = testEndTime ?? this.keystrokeTimestamps[this.keystrokeTimestamps.length - 1];
+    const durationMs = Math.max(1000, end - start);
 
-    for (const [pair, times] of Object.entries(this.transitions)) {
-      if (times.length >= 1 && pair.trim().length >= 2) {
-        const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
-        sluggishPairs.push({ pair, avgTimeMs: avg });
+    // Group into 1-second buckets (or 500ms if test duration is under 2 seconds)
+    const totalSeconds = Math.max(1, Math.floor(durationMs / 1000));
+    const bucketInterval = totalSeconds >= 2 ? 1000 : 500;
+    const bucketCount = Math.max(2, Math.floor(durationMs / bucketInterval));
+
+    const bucketCounts: number[] = new Array(bucketCount).fill(0);
+
+    for (const t of this.keystrokeTimestamps) {
+      const offset = t - start;
+      if (offset >= 0 && offset < durationMs) {
+        const idx = Math.min(bucketCount - 1, Math.floor(offset / bucketInterval));
+        bucketCounts[idx]++;
       }
     }
 
-    // Sort descending by avgTimeMs
-    sluggishPairs.sort((a, b) => b.avgTimeMs - a.avgTimeMs);
+    // Convert raw keystrokes in bucket to per-minute speed (raw WPM): (chars / 5) * (60000 / interval)
+    const rawWpms = bucketCounts.map((count) => (count / 5) * (60000 / bucketInterval));
+
+    // Calculate mean raw WPM
+    const mean = rawWpms.reduce((a, b) => a + b, 0) / rawWpms.length;
+    if (mean <= 0) return 100;
+
+    // Calculate sample standard deviation
+    const variance = rawWpms.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / rawWpms.length;
+    const stdDev = Math.sqrt(variance);
+
+    // Monkeytype Coefficient of Variation (CoV)
+    const cov = stdDev / mean;
+
+    // Map to percentage: standard steady typists score 75–95%, erratic stops lower score
+    const consistency = Math.round(Math.max(0, Math.min(100, (1 - cov) * 100)));
+    return consistency;
+  }
+
+  public getAnalytics(): HeatmapAnalytics {
+    const rawPairs: { pair: string; avgTimeMs: number }[] = [];
+    let totalTime = 0;
+    let totalCount = 0;
+
+    for (const [pair, times] of Object.entries(this.transitions)) {
+      if (times.length >= 1 && pair.trim().length >= 2) {
+        const sum = times.reduce((a, b) => a + b, 0);
+        const avg = Math.round(sum / times.length);
+        totalTime += sum;
+        totalCount += times.length;
+        rawPairs.push({ pair, avgTimeMs: avg });
+      }
+    }
+
+    const baselineAvg = totalCount > 0 ? Math.round(totalTime / totalCount) : 180;
+
+    // Sort descending by slowest transition
+    rawPairs.sort((a, b) => b.avgTimeMs - a.avgTimeMs);
+
+    const sluggishPairs: SluggishPair[] = rawPairs.map((p) => {
+      const factor = baselineAvg > 0 ? Number((p.avgTimeMs / baselineAvg).toFixed(1)) : 1.0;
+      let description = 'Slight pause';
+      if (factor >= 2.5 || p.avgTimeMs >= 500) {
+        description = 'Noticeable pause';
+      } else if (factor >= 1.8 || p.avgTimeMs >= 350) {
+        description = 'Hesitation';
+      } else if (factor >= 1.3) {
+        description = 'Slight pause';
+      } else {
+        description = 'Minor delay';
+      }
+
+      return {
+        pair: p.pair,
+        avgTimeMs: p.avgTimeMs,
+        slowdownFactor: factor,
+        description,
+      };
+    });
 
     return {
       keyStats: { ...this.keyStats },
       sluggishPairs,
-      fingerErrors: { ...this.fingerErrors }
+      fingerErrors: { ...this.fingerErrors },
+      averageTransitionMs: baselineAvg,
     };
   }
 }

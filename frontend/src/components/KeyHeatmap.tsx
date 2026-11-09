@@ -87,17 +87,25 @@ const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
       </div>
 
       <div className="analytics-grid">
-        {/* Sluggish Transitions */}
+        {/* Slowest Key Transitions */}
         <div className="analytics-card">
-          <h4>Sluggish Transition Pairs</h4>
+          <div className="card-header-group">
+            <h4>Slowest Key Combinations</h4>
+            <span className="card-subtitle">Where your fingers hesitated before striking the next letter</span>
+          </div>
           {sluggishPairs.length === 0 ? (
-            <div className="empty-hint">Cadence was uniform across all transitions.</div>
+            <div className="empty-hint">Smooth cadence across all keys. No notable hesitation detected!</div>
           ) : (
             <div className="sluggish-list">
               {sluggishPairs.slice(0, 4).map((p, idx) => (
                 <div key={idx} className="sluggish-item">
-                  <span className="pair-badge">"{p.pair}"</span>
-                  <span className="pair-latency">{p.avgTimeMs}ms delay</span>
+                  <div className="pair-info">
+                    <span className="pair-badge">"{p.pair}"</span>
+                    <span className="pair-desc">{p.description}</span>
+                  </div>
+                  <span className="pair-latency">
+                    {p.slowdownFactor > 1.1 ? `${p.slowdownFactor}x slower` : 'Slight delay'}
+                  </span>
                 </div>
               ))}
             </div>

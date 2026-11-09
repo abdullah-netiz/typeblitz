@@ -80,7 +80,7 @@ export const THEMES: Record<string, Theme> = {
   }
 };
 
-export const DEFAULT_THEME = 'midnight-cyber';
+export const DEFAULT_THEME = 'botanical-olive';
 
 export function applyTheme(themeId: string): void {
   const theme = THEMES[themeId] || THEMES[DEFAULT_THEME];

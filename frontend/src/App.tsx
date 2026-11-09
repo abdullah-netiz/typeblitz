@@ -95,6 +95,24 @@ function App() {
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
+  // First-visit onboarding tooltip for theme & sound
+  const [showOnboardingTip, setShowOnboardingTip] = useState(() => {
+    try {
+      return localStorage.getItem('typeblitz_guide_seen') !== 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const dismissOnboardingTip = useCallback(() => {
+    setShowOnboardingTip(false);
+    try {
+      localStorage.setItem('typeblitz_guide_seen', 'true');
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Initialize theme
   useEffect(() => {
     applyTheme(currentTheme);
@@ -103,6 +121,7 @@ function App() {
   const handleSelectTheme = (themeId: string) => {
     setCurrentTheme(themeId);
     applyTheme(themeId);
+    dismissOnboardingTip();
   };
 
 
@@ -202,7 +221,7 @@ function App() {
     setWpm(stats.wpm);
     setRawWpm(stats.rawWpm);
     setAccuracy(stats.accuracy);
-    const cons = cadenceTrackerRef.current.getConsistency();
+    const cons = cadenceTrackerRef.current.getConsistency(currentStartTime, endTime);
     setConsistency(cons);
 
     if (isFailed) {
@@ -598,6 +617,24 @@ function App() {
         </div>
 
         <div className="header-right">
+          {/* First-visit onboarding hover guide */}
+          {showOnboardingTip && status !== 'typing' && (
+            <div className="onboarding-guide-tip fade-in">
+              <div className="guide-tip-arrow" />
+              <div className="guide-tip-header">
+                <span className="guide-tip-spark">✦</span>
+                <span className="guide-tip-title">Style & Audio</span>
+                <button className="guide-tip-close" onClick={dismissOnboardingTip} title="Dismiss">✕</button>
+              </div>
+              <p className="guide-tip-text">
+                Customize your color theme and mechanical keyboard sounds here anytime!
+              </p>
+              <button className="guide-tip-btn" onClick={dismissOnboardingTip}>
+                Got it
+              </button>
+            </div>
+          )}
+
           {/* Theme Selector */}
           <ThemeSelector currentTheme={currentTheme} onSelectTheme={handleSelectTheme} />
 
