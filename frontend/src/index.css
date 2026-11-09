@@ -88,6 +88,104 @@ body {
   min-height: 60px;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.header-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.nav-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.75rem;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-tab-btn:hover {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.nav-tab-btn.active {
+  color: var(--main-color);
+  background: var(--main-color-dim);
+}
+
+.user-nav-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.user-nav-tab-btn.active {
+  border-color: var(--main-color);
+  color: var(--main-color);
+  box-shadow: 0 0 12px var(--main-color-dim);
+}
+
+.user-avatar-mini {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-initial-mini {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--main-color-dim);
+  color: var(--main-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.user-name-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.restart-hint-bottom {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  opacity: 0.65;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.3px;
+}
+
+.restart-hint-bottom kbd {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-color);
+}
+
 .logo {
   font-size: clamp(1.4rem, 2.5vw, 2rem);
   font-weight: 700;
@@ -1135,18 +1233,61 @@ body {
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
   overflow-x: auto;
-  padding: 0.5rem 0;
+  padding: 0.8rem 0;
+  margin: 0 auto;
 }
 
 .keyboard-svg {
   width: 100%;
-  max-width: 780px;
+  max-width: 600px;
   height: auto;
+  display: block;
 }
 
 .key-group rect {
-  transition: fill 0.3s ease;
+  transition: fill 0.3s ease, stroke 0.3s ease;
+}
+
+.key-rect-untyped {
+  fill: var(--bg-surface);
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.key-rect-clean {
+  fill: var(--main-color-dim);
+  stroke: var(--main-color);
+  stroke-opacity: 0.65;
+  stroke-width: 1.2;
+}
+
+.key-rect-slight-err {
+  fill: var(--error-extra-color, var(--error-color));
+  fill-opacity: 0.16;
+  stroke: var(--error-color);
+  stroke-opacity: 0.7;
+  stroke-width: 1.3;
+}
+
+.key-rect-high-err {
+  fill: var(--error-color);
+  fill-opacity: 0.32;
+  stroke: var(--error-color);
+  stroke-width: 1.6;
+}
+
+.key-text-untyped {
+  fill: var(--sub-color);
+}
+
+.key-text-clean {
+  fill: var(--text-color);
+}
+
+.key-text-err {
+  fill: var(--error-color);
 }
 
 .analytics-grid {

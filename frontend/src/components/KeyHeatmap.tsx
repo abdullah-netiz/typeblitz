@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { type HeatmapAnalytics, getKeyColor } from '../utils/heatmapUtils';
+import { type HeatmapAnalytics, getKeyStyleClass, getKeyTextStyleClass } from '../utils/heatmapUtils';
 
 export type { HeatmapAnalytics };
 
@@ -16,6 +16,9 @@ const KEYBOARD_ROWS = [
   ['space']
 ];
 
+// Row X offsets mathematically centered in 600px viewBox
+const ROW_OFFSETS = [17, 39, 61, 83, 140];
+
 const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
   const { keyStats, sluggishPairs, fingerErrors } = analytics;
   const totalErrors = Object.values(fingerErrors).reduce((a, b) => a + b, 0);
@@ -23,26 +26,26 @@ const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
   return (
     <div className="heatmap-container fade-in">
       <div className="heatmap-header">
-        <h3>Key Burst Heatmap & Sluggish Transitions</h3>
-        <p>Post-test ergonomic & cadence analysis</p>
+        <h3>Key Burst Heatmap & Accuracy</h3>
+        <p>Post-test ergonomic analysis matched to your active theme</p>
       </div>
 
       <div className="keyboard-svg-wrapper">
-        <svg viewBox="0 0 780 230" className="keyboard-svg" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 600 226" className="keyboard-svg" preserveAspectRatio="xMidYMid meet">
           {KEYBOARD_ROWS.map((row, rIdx) => {
-            let xOffset = rIdx === 1 ? 25 : rIdx === 2 ? 40 : rIdx === 3 ? 60 : rIdx === 4 ? 180 : 10;
+            let xOffset = ROW_OFFSETS[rIdx];
             const y = 12 + rIdx * 42;
 
             return row.map((key) => {
               const stats = keyStats[key];
               const isSpace = key === 'space';
-              const width = isSpace ? 340 : 40;
+              const width = isSpace ? 320 : 38;
               const height = 34;
               const currentX = xOffset;
               xOffset += width + 6;
 
-              const bg = getKeyColor(stats);
-              const hasErrors = stats && stats.errors > 0;
+              const rectClass = getKeyStyleClass(stats);
+              const textClass = getKeyTextStyleClass(stats);
 
               return (
                 <g key={key} className="key-group">
@@ -52,15 +55,13 @@ const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
                     width={width}
                     height={height}
                     rx={6}
-                    fill={bg}
-                    stroke={hasErrors ? 'var(--error-color)' : 'rgba(255, 255, 255, 0.12)'}
-                    strokeWidth={hasErrors ? 1.5 : 1}
+                    className={rectClass}
                   />
                   <text
                     x={currentX + width / 2}
                     y={y + height / 2 + 5}
                     textAnchor="middle"
-                    fill={stats?.typed ? 'var(--text-color)' : 'var(--text-dim)'}
+                    className={textClass}
                     fontSize={isSpace ? 11 : 13}
                     fontFamily="var(--font-mono)"
                     fontWeight="600"
@@ -69,7 +70,7 @@ const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
                   </text>
                   {stats && stats.errors > 0 && (
                     <text
-                      x={currentX + width - 6}
+                      x={currentX + width - 5}
                       y={y + 11}
                       textAnchor="end"
                       fill="var(--error-color)"
@@ -91,7 +92,7 @@ const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
         <div className="analytics-card">
           <div className="card-header-group">
             <h4>Slowest Key Combinations</h4>
-            <span className="card-subtitle">Where your fingers hesitated before striking the next letter</span>
+            <span className="card-subtitle">Where your fingers paused the longest before typing the next letter</span>
           </div>
           {sluggishPairs.length === 0 ? (
             <div className="empty-hint">Smooth cadence across all keys. No notable hesitation detected!</div>
@@ -114,7 +115,10 @@ const KeyHeatmap = memo(({ analytics }: KeyHeatmapProps) => {
 
         {/* Finger Error Distribution */}
         <div className="analytics-card">
-          <h4>Finger Error Distribution</h4>
+          <div className="card-header-group">
+            <h4>Finger Error Distribution</h4>
+            <span className="card-subtitle">Breakdown of misstrikes per typing finger</span>
+          </div>
           {totalErrors === 0 ? (
             <div className="empty-hint">100% clean typing! Zero finger misstrikes.</div>
           ) : (

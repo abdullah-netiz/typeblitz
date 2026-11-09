@@ -17,13 +17,18 @@ export interface HeatmapAnalytics {
   averageTransitionMs: number;
 }
 
-export function getKeyColor(stats?: KeyStats): string {
-  if (!stats || stats.typed === 0) return 'rgba(255, 255, 255, 0.05)';
+export function getKeyStyleClass(stats?: KeyStats): string {
+  if (!stats || stats.typed === 0) return 'key-rect-untyped';
   const errorRate = stats.errors / stats.typed;
-  if (errorRate === 0) return 'rgba(16, 185, 129, 0.35)'; // Crisp green
-  if (errorRate < 0.1) return 'rgba(234, 179, 8, 0.45)';  // Amber yellow
-  if (errorRate < 0.25) return 'rgba(249, 115, 22, 0.6)'; // Orange
-  return 'rgba(244, 63, 94, 0.75)'; // Crimson rose
+  if (errorRate === 0) return 'key-rect-clean';
+  if (errorRate <= 0.15) return 'key-rect-slight-err';
+  return 'key-rect-high-err';
+}
+
+export function getKeyTextStyleClass(stats?: KeyStats): string {
+  if (!stats || stats.typed === 0) return 'key-text-untyped';
+  if (stats.errors > 0) return 'key-text-err';
+  return 'key-text-clean';
 }
 
 export function getFingerForChar(char: string): string {
