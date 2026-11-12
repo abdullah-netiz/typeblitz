@@ -1534,12 +1534,18 @@ body {
   font-family: var(--font-sans);
 }
 
-.footer-info span {
+.footer-info span,
+.footer-info button {
+  background: none;
+  border: 0;
   cursor: pointer;
+  color: inherit;
+  font: inherit;
   transition: var(--transition-smooth);
 }
 
-.footer-info span:hover {
+.footer-info span:hover,
+.footer-info button:hover {
   color: var(--text-dim);
 }
 
