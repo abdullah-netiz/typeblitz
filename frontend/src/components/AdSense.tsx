@@ -11,6 +11,7 @@ interface AdSenseProps {
 }
 
 const ADSENSE_CLIENT = 'ca-pub-9797376354139382';
+const ADSENSE_SLOT = '9920319019';
 
 export default function AdSense({ className = '' }: AdSenseProps) {
   const adRef = useRef<HTMLModElement>(null);
@@ -32,6 +33,7 @@ export default function AdSense({ className = '' }: AdSenseProps) {
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', minHeight: '100px' }}
         data-ad-client={ADSENSE_CLIENT}
+        data-ad-slot={ADSENSE_SLOT}
         data-ad-format="auto"
         data-full-width-responsive="true"
       />
