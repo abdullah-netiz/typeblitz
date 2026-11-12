@@ -7,6 +7,7 @@ import ThemeSelector from './components/ThemeSelector';
 import SoundSelector from './components/SoundSelector';
 import KeyHeatmap, { type HeatmapAnalytics } from './components/KeyHeatmap';
 import AdSense from './components/AdSense';
+import LegalPage, { type LegalPageType } from './components/LegalPage';
 import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
 import { calculateWPM } from './utils/wpmCalculator';
@@ -86,7 +87,7 @@ function App() {
   const lastKeystrokeRef = useRef(0);
 
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState<'test' | 'leaderboard' | 'account'>('test');
+  const [activeView, setActiveView] = useState<'test' | 'leaderboard' | 'account' | LegalPageType>('test');
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -954,6 +955,13 @@ function App() {
         </>
       )}
 
+      {(['privacy', 'terms', 'security', 'contact'] as LegalPageType[]).includes(activeView as LegalPageType) && (
+        <LegalPage
+          page={activeView as LegalPageType}
+          onBack={() => setActiveView('test')}
+        />
+      )}
+
       {/* Small subtle restart instruction positioned just above footer links */}
       {activeView === 'test' && (
         <div className={`restart-hint-bottom ${isFocused ? 'hint-dimmed' : ''}`}>
@@ -970,9 +978,10 @@ function App() {
           <a href="https://www.patreon.com/cw/typeblitz" onClick={e => e.preventDefault()} className="patreon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M0 .48v23.04h4.22V.48zm15.385 0c-4.764 0-8.641 3.88-8.641 8.65 0 4.755 3.877 8.623 8.641 8.623 4.75 0 8.615-3.868 8.615-8.623 0-4.77-3.865-8.65-8.615-8.65z"/></svg> Support</a>
         </div>
         <div className="footer-info">
-          <span>Privacy</span>
-          <span>Security</span>
-          <span>Contact</span>
+          <button type="button" onClick={() => setActiveView('privacy')}>Privacy</button>
+          <button type="button" onClick={() => setActiveView('terms')}>Terms</button>
+          <button type="button" onClick={() => setActiveView('security')}>Security</button>
+          <button type="button" onClick={() => setActiveView('contact')}>Contact</button>
           <span className="version">v2.0.0</span>
         </div>
       </footer>
