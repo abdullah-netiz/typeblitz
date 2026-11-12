@@ -6,6 +6,7 @@ import Leaderboard from './components/Leaderboard';
 import ThemeSelector from './components/ThemeSelector';
 import SoundSelector from './components/SoundSelector';
 import KeyHeatmap, { type HeatmapAnalytics } from './components/KeyHeatmap';
+import AdSense from './components/AdSense';
 import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
 import { calculateWPM } from './utils/wpmCalculator';
@@ -892,22 +893,30 @@ function App() {
 
           {/* Typing Area */}
           {status !== 'finished' && (
-            <div className="typing-area-wrapper">
-              <canvas ref={canvasRef} className="particle-canvas" />
-              {capsLockOn && status === 'typing' && (
-                <div className="capslock-indicator">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2L3 14h6v6h6v-6h6L12 2z" />
-                  </svg>
-                  CAPS LOCK ACTIVE
-                </div>
-              )}
-              <div className="typing-area" ref={typingAreaRef}>
-                <div className="words-inner" ref={wordsInnerRef}>
-                  <div ref={caretRef} className={`caret ${status === 'typing' ? 'typing' : ''}`} />
-                  {renderWords()}
+            <div className="typing-layout">
+              <aside className="typing-ad-rail" aria-label="Advertisement">
+                <AdSense />
+              </aside>
+              <div className="typing-area-wrapper">
+                <canvas ref={canvasRef} className="particle-canvas" />
+                {capsLockOn && status === 'typing' && (
+                  <div className="capslock-indicator">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2L3 14h6v6h6v-6h6L12 2z" />
+                    </svg>
+                    CAPS LOCK ACTIVE
+                  </div>
+                )}
+                <div className="typing-area" ref={typingAreaRef}>
+                  <div className="words-inner" ref={wordsInnerRef}>
+                    <div ref={caretRef} className={`caret ${status === 'typing' ? 'typing' : ''}`} />
+                    {renderWords()}
+                  </div>
                 </div>
               </div>
+              <aside className="typing-ad-rail" aria-label="Advertisement">
+                <AdSense />
+              </aside>
             </div>
           )}
 
@@ -931,12 +940,18 @@ function App() {
 
       {/* Full-page Leaderboard Tab */}
       {activeView === 'leaderboard' && (
-        <Leaderboard onBack={() => setActiveView('test')} />
+        <>
+          <Leaderboard onBack={() => setActiveView('test')} />
+          <AdSense className="page-ad" />
+        </>
       )}
 
       {/* Full-page Account Tab */}
       {activeView === 'account' && (
-        <Profile onBack={() => setActiveView('test')} />
+        <>
+          <Profile onBack={() => setActiveView('test')} />
+          <AdSense className="page-ad" />
+        </>
       )}
 
       {/* Small subtle restart instruction positioned just above footer links */}
