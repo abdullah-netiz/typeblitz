@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { updateProfile } from 'firebase/auth';
 import './Profile.css';
+import { SkeletonBox, RecentScoresSkeleton } from './SkeletonLoader';
 
 interface StatRecord {
   _id: string;
@@ -18,7 +19,8 @@ interface ProfileProps {
 export default function Profile({ onBack }: ProfileProps) {
   const { user, logOut, signIn, signUp, signInWithGoogle, signInWithGithub } = useAuth();
   const [stats, setStats] = useState<StatRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(user));
+  const [isServerWaking, setIsServerWaking] = useState(false);
   const [error, setError] = useState('');
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -32,16 +34,15 @@ export default function Profile({ onBack }: ProfileProps) {
   const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        const token = await user.getIdToken();
+    if (!user) return;
 
-        // Sync display name with backend MongoDB automatically
+    let isCancelled = false;
+    const timer = setTimeout(() => {
+      if (!isCancelled) setIsServerWaking(true);
+    }, 2500);
+
+    user.getIdToken()
+      .then((token) => {
         if (user.displayName) {
           fetch(`${import.meta.env.VITE_API_URL}/api/results/profile`, {
             method: 'PUT',
@@ -53,23 +54,57 @@ export default function Profile({ onBack }: ProfileProps) {
           }).catch(() => {});
         }
 
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/results/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        return fetch(`${import.meta.env.VITE_API_URL}/api/results/me`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-
+      })
+      .then(async (res) => {
         if (!res.ok) throw new Error('Failed to load past results');
-        const data = await res.json();
-        setStats(data);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Error connecting to backend');
-      } finally {
-        setLoading(false);
-      }
-    };
+        return res.json();
+      })
+      .then((data) => {
+        if (!isCancelled) {
+          setStats(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!isCancelled) {
+          setError(err instanceof Error ? err.message : 'Error connecting to backend');
+          setLoading(false);
+        }
+      });
 
-    fetchStats();
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [user]);
+
+  const handleRetry = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    setError('');
+    setIsServerWaking(false);
+
+    const timer = setTimeout(() => {
+      setIsServerWaking(true);
+    }, 2500);
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/results/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load past results');
+      const data = await res.json();
+      setStats(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error connecting to backend');
+    } finally {
+      setLoading(false);
+      clearTimeout(timer);
+    }
   }, [user]);
 
   const handleUpdateName = async (e: React.FormEvent) => {
@@ -282,15 +317,27 @@ export default function Profile({ onBack }: ProfileProps) {
       <div className="account-kpi-grid">
         <div className="kpi-card">
           <span className="kpi-label">Peak Speed</span>
-          <span className="kpi-value">{bestWpm} <small>WPM</small></span>
+          {loading ? (
+            <SkeletonBox className="skeleton-kpi" />
+          ) : (
+            <span className="kpi-value">{bestWpm} <small>WPM</small></span>
+          )}
         </div>
         <div className="kpi-card">
           <span className="kpi-label">Avg Accuracy</span>
-          <span className="kpi-value">{avgAccuracy}%</span>
+          {loading ? (
+            <SkeletonBox className="skeleton-kpi" />
+          ) : (
+            <span className="kpi-value">{avgAccuracy}%</span>
+          )}
         </div>
         <div className="kpi-card">
           <span className="kpi-label">Tests Logged</span>
-          <span className="kpi-value">{validStats.length}</span>
+          {loading ? (
+            <SkeletonBox className="skeleton-kpi" />
+          ) : (
+            <span className="kpi-value">{validStats.length}</span>
+          )}
         </div>
       </div>
 
@@ -320,9 +367,24 @@ export default function Profile({ onBack }: ProfileProps) {
       <div className="account-section-card">
         <h3>Recent Typing Tests</h3>
 
-        {loading && <p className="loading-text">Loading your test history...</p>}
+        {loading && (
+          <RecentScoresSkeleton
+            rowCount={6}
+            isWakingUp={isServerWaking}
+            onRetry={handleRetry}
+          />
+        )}
 
-        {!loading && validStats.length === 0 && (
+        {error && (
+          <div className="empty-tests-box">
+            <p className="error-inline">{error}</p>
+            <button className="retry-btn" onClick={handleRetry} style={{ marginTop: '0.8rem' }}>
+              Retry Connection
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && validStats.length === 0 && (
           <div className="empty-tests-box">
             <p>No tests recorded yet.</p>
             {onBack && (

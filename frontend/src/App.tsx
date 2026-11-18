@@ -8,6 +8,7 @@ import SoundSelector from './components/SoundSelector';
 import KeyHeatmap, { type HeatmapAnalytics } from './components/KeyHeatmap';
 import AdSense from './components/AdSense';
 import LegalPage, { type LegalPageType } from './components/LegalPage';
+import './components/SkeletonLoader.css';
 import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
 import { calculateWPM } from './utils/wpmCalculator';
@@ -926,7 +927,12 @@ function App() {
             <div className="restart-hint fade-in">
               {user && (
                 <div className={`save-status ${isSaving ? 'saving' : saveSuccess ? 'success' : 'error'}`}>
-                  {isSaving && 'Saving to cloud...'}
+                  {isSaving && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <span className="server-pulse-dot" style={{ width: '6px', height: '6px' }} />
+                      Saving to cloud (connecting to server)...
+                    </span>
+                  )}
                   {!isSaving && saveSuccess === true && 'Stats saved to your profile!'}
                   {!isSaving && saveSuccess === false && 'Failed to save stats.'}
                 </div>

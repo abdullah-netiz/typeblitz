@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import './Leaderboard.css';
+import { LeaderboardSkeleton } from './SkeletonLoader';
 
 interface LeaderboardEntry {
   rank: number;
@@ -23,24 +24,72 @@ const FILTER_OPTIONS = [
 export default function Leaderboard({ onBack }: LeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isServerWaking, setIsServerWaking] = useState(false);
   const [error, setError] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
 
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/results/leaderboard`);
+  const handleRetry = useCallback(() => {
+    setLoading(true);
+    setError('');
+    setIsServerWaking(false);
+
+    let isCancelled = false;
+    const timer = setTimeout(() => {
+      if (!isCancelled) setIsServerWaking(true);
+    }, 2500);
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/results/leaderboard`)
+      .then(async (res) => {
         if (!res.ok) throw new Error('Failed to load leaderboard data');
-        const data = await res.json();
-        setEntries(data);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Error loading leaderboard');
-      } finally {
-        setLoading(false);
-      }
+        return res.json();
+      })
+      .then((data) => {
+        if (!isCancelled) {
+          setEntries(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!isCancelled) {
+          setError(err instanceof Error ? err.message : 'Error loading leaderboard');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
     };
-    fetchLeaderboard();
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const timer = setTimeout(() => {
+      if (!isCancelled) setIsServerWaking(true);
+    }, 2500);
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/results/leaderboard`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to load leaderboard data');
+        return res.json();
+      })
+      .then((data) => {
+        if (!isCancelled) {
+          setEntries(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!isCancelled) {
+          setError(err instanceof Error ? err.message : 'Error loading leaderboard');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -78,13 +127,21 @@ export default function Leaderboard({ onBack }: LeaderboardProps) {
 
       <div className="lb-content-card">
         {loading && (
-          <div className="leaderboard-loading">
-            <div className="loading-spinner" />
-            <p>Fetching rankings...</p>
-          </div>
+          <LeaderboardSkeleton
+            rowCount={8}
+            isWakingUp={isServerWaking}
+            onRetry={handleRetry}
+          />
         )}
 
-        {error && <div className="leaderboard-error">{error}</div>}
+        {error && (
+          <div className="leaderboard-error">
+            <p>{error}</p>
+            <button className="retry-btn" onClick={handleRetry} style={{ marginTop: '0.8rem' }}>
+              Retry Connection
+            </button>
+          </div>
+        )}
 
         {!loading && !error && entries.length === 0 && (
           <div className="leaderboard-empty">

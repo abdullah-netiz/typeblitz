@@ -1,0 +1,153 @@
+/* --- Modern Shimmer Skeleton Animations & Styles --- */
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-box {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.09) 37%,
+    rgba(255, 255, 255, 0.04) 63%
+  );
+  background-size: 300% 100%;
+  animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
+/* Skeleton variants */
+.skeleton-text {
+  height: 0.95rem;
+  border-radius: 4px;
+}
+
+.skeleton-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.skeleton-kpi {
+  width: 85px;
+  height: 1.9rem;
+  border-radius: 6px;
+  margin-top: 0.2rem;
+}
+
+.skeleton-num {
+  height: 1rem;
+}
+
+/* Skeleton Table / Rows */
+.skeleton-row {
+  opacity: 0.9;
+  cursor: default;
+}
+
+.skeleton-row:hover {
+  background: transparent !important;
+}
+
+.skeleton-table {
+  width: 100%;
+}
+
+.skeleton-table td {
+  padding: 1rem 0.5rem;
+}
+
+.skeleton-tr:hover td {
+  background: transparent !important;
+}
+
+/* Server Wakeup Indicator (for Render free tier cold starts) */
+.server-wakeup-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--main-color-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--main-color);
+  color: var(--text-color);
+  font-family: var(--font-sans);
+  padding: 0.85rem 1.1rem;
+  border-radius: 8px;
+  margin: 1rem 1.2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.server-wakeup-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.server-wakeup-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.server-wakeup-hint {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
+}
+
+.server-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--main-color);
+  box-shadow: 0 0 10px var(--main-color);
+  animation: pulse-glow 1.6s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+    box-shadow: 0 0 4px var(--main-color);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 14px var(--main-color);
+  }
+}
+
+.retry-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--main-color);
+  color: var(--main-color);
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: var(--main-color);
+  color: var(--bg-color);
+}
