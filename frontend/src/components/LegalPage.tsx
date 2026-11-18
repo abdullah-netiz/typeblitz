@@ -22,7 +22,7 @@ const pageDetails: Record<LegalPageType, { title: string; intro: string }> = {
   },
   contact: {
     title: 'Contact TypeBlitz',
-    intro: 'For support, bug reports, privacy requests, or other questions, contact the project through GitHub.'
+    intro: 'For support, bug reports, privacy requests, or other questions, reach out via email or GitHub.'
   }
 };
 
@@ -77,7 +77,7 @@ export default function LegalPage({ page, onBack }: LegalPageProps) {
             <h2>Your choices and requests</h2>
             <p>
               You can clear browser storage through your browser settings, sign out of TypeBlitz, or
-              request help with account data by contacting the project. Deleting local storage may remove
+              request help with account data by contacting us at <a href="mailto:abdullah.email.mee@gmail.com">abdullah.email.mee@gmail.com</a>. Deleting local storage may remove
               locally saved preferences and personal-best records.
             </p>
           </section>
@@ -141,8 +141,9 @@ export default function LegalPage({ page, onBack }: LegalPageProps) {
           <section>
             <h2>Report a security issue</h2>
             <p>
-              Please report suspected vulnerabilities privately through the project’s
-              <a href="https://github.com/abdullah-netiz/typeblitz/security" target="_blank" rel="noopener noreferrer"> GitHub security page</a>
+              Please report suspected vulnerabilities privately to{' '}
+              <a href="mailto:abdullah.email.mee@gmail.com">abdullah.email.mee@gmail.com</a> or through the project’s{' '}
+              <a href="https://github.com/abdullah-netiz/typeblitz/security" target="_blank" rel="noopener noreferrer">GitHub security page</a>{' '}
               rather than posting exploit details publicly.
             </p>
           </section>
@@ -152,18 +153,29 @@ export default function LegalPage({ page, onBack }: LegalPageProps) {
       {page === 'contact' && (
         <div className="legal-content">
           <section>
-            <h2>Get help</h2>
+            <h2>Direct Email</h2>
             <p>
-              Open a support request or bug report in the
-              <a href="https://github.com/abdullah-netiz/typeblitz/issues" target="_blank" rel="noopener noreferrer"> TypeBlitz GitHub issue tracker</a>.
+              For general inquiries, feedback, privacy requests, or support, email us directly at:
+              <br />
+              <a href="mailto:abdullah.email.mee@gmail.com" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                abdullah.email.mee@gmail.com
+              </a>
+            </p>
+          </section>
+          <section>
+            <h2>Bug reports & support</h2>
+            <p>
+              You can also open a support request or bug report in the{' '}
+              <a href="https://github.com/abdullah-netiz/typeblitz/issues" target="_blank" rel="noopener noreferrer">TypeBlitz GitHub issue tracker</a>.
               Include your browser, device, steps to reproduce the problem, and screenshots when useful.
             </p>
           </section>
           <section>
-            <h2>Privacy requests</h2>
+            <h2>Privacy & Data Requests</h2>
             <p>
-              For account, privacy, or data questions, open an issue and clearly label it as a private
-              request. Do not include passwords, authentication tokens, or other secrets.
+              For account, privacy, or data deletion questions, email{' '}
+              <a href="mailto:abdullah.email.mee@gmail.com">abdullah.email.mee@gmail.com</a>.
+              Do not include passwords, authentication tokens, or sensitive credentials in your messages.
             </p>
           </section>
         </div>
