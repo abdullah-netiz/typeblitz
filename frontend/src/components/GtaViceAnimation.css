@@ -3,62 +3,52 @@
 .gta-anim-container {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
 }
 
-/* Ambient Vice City Horizon Sunset Aura */
+/* Ambient Vice City Horizon Sunset Aura - seamless full-viewport blend without box edges */
 .gta-sunset-aura {
   position: absolute;
-  top: -150px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140vw;
-  height: 500px;
-  background: radial-gradient(
-    ellipse at 50% 10%,
-    rgba(255, 42, 133, 0.18) 0%,
-    rgba(255, 120, 50, 0.1) 25%,
-    rgba(0, 240, 255, 0.05) 50%,
-    transparent 75%
-  );
-  filter: blur(40px);
-}
-
-.gta-horizon-line {
-  position: absolute;
-  top: 75px;
+  top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 240, 255, 0.3) 20%,
-    rgba(255, 42, 133, 0.7) 50%,
-    rgba(255, 159, 67, 0.3) 80%,
+  height: 60vh;
+  background: radial-gradient(
+    ellipse 85% 55% at 50% 0%,
+    rgba(255, 42, 133, 0.12) 0%,
+    rgba(255, 120, 50, 0.05) 40%,
+    rgba(0, 240, 255, 0.02) 70%,
     transparent 100%
   );
-  box-shadow: 0 0 12px rgba(255, 42, 133, 0.5);
+  filter: blur(50px);
+  pointer-events: none;
 }
 
 /* Palm Trees on Screen Edges */
 .gta-palm-decor {
   position: absolute;
   bottom: 0;
-  opacity: 0.38;
+  opacity: 0.32;
   filter: drop-shadow(0 0 10px rgba(255, 42, 133, 0.35));
-  transition: opacity 0.5s ease;
+  transition: opacity 0.4s ease;
   z-index: 0;
+  pointer-events: none;
+}
+
+.gta-palm-decor.typing-dimmed {
+  opacity: 0.08;
 }
 
 .gta-palm-left {
-  left: -20px;
+  left: 0;
 }
 
 .gta-palm-right {
-  right: -20px;
+  right: 0;
 }
 
 @media (max-width: 900px) {
@@ -71,6 +61,7 @@
 .gta-particles-wrap {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
 .gta-particle {

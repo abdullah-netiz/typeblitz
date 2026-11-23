@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { animate, stagger } from 'animejs';
 import './GtaViceAnimation.css';
 
@@ -7,7 +8,7 @@ interface GtaViceAnimationProps {
   isTyping?: boolean;
 }
 
-export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
+export default function GtaViceAnimation({ active, isTyping = false }: GtaViceAnimationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showToast, setShowToast] = useState(true);
   const toastRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,7 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
     return () => clearTimeout(timer);
   }, [active]);
 
-  // Anime.js animation for palm trees and floating neon embers
+  // Anime.js animation for palm trees, sunset aura pulse, and floating neon embers
   useEffect(() => {
     if (!active || !containerRef.current) return;
 
@@ -54,11 +55,11 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
       loop: true
     });
 
-    // 2. Horizon neon glow pulse
-    animate('.gta-horizon-line', {
-      opacity: [0.35, 0.85],
-      duration: 2200,
-      ease: 'inOutQuad',
+    // 2. Sunset ambient aura gentle breathing pulse
+    animate('.gta-sunset-aura', {
+      opacity: [0.75, 1],
+      duration: 3500,
+      ease: 'inOutSine',
       alternate: true,
       loop: true
     });
@@ -68,11 +69,11 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
       translateY: () => [0, -window.innerHeight * 0.7 - Math.random() * 100],
       translateX: () => [0, (Math.random() - 0.5) * 80],
       opacity: [
-        { to: 0.8, duration: 800, ease: 'outQuad' },
+        { to: 0.75, duration: 800, ease: 'outQuad' },
         { to: 0, duration: 1800, ease: 'inQuad' }
       ],
       scale: [
-        { to: 1.4, duration: 600 },
+        { to: 1.3, duration: 600 },
         { to: 0.6, duration: 2000 }
       ],
       delay: stagger(180, { from: 'random' }),
@@ -103,16 +104,15 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
     }
   }, [showToast]);
 
-  if (!active) return null;
+  if (!active || typeof document === 'undefined') return null;
 
   const particles = Array.from({ length: 18 });
   const toastText = 'LEONIDA // GTA VI VICE CITY';
 
-  return (
+  return createPortal(
     <div className="gta-anim-container" ref={containerRef} aria-hidden="true">
-      {/* Ambient Vice City Horizon Sunset Aura */}
+      {/* Ambient Vice City Horizon Sunset Aura - seamlessly blended across viewport */}
       <div className="gta-sunset-aura" />
-      <div className="gta-horizon-line" />
 
       {/* Floating Neon Dust Sparks */}
       <div className="gta-particles-wrap">
@@ -136,7 +136,7 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
       </div>
 
       {/* Silhouette Palm Trees on Screen Edges */}
-      <div className="gta-palm-decor gta-palm-left">
+      <div className={`gta-palm-decor gta-palm-left ${isTyping ? 'typing-dimmed' : ''}`}>
         <svg viewBox="0 0 160 300" width="140" height="260" fill="none">
           {/* Trunk */}
           <path
@@ -161,7 +161,7 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
         </svg>
       </div>
 
-      <div className="gta-palm-decor gta-palm-right">
+      <div className={`gta-palm-decor gta-palm-right ${isTyping ? 'typing-dimmed' : ''}`}>
         <svg viewBox="0 0 160 300" width="140" height="260" fill="none">
           {/* Trunk */}
           <path
@@ -200,6 +200,7 @@ export default function GtaViceAnimation({ active }: GtaViceAnimationProps) {
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

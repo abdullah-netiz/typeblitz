@@ -622,11 +622,12 @@ function App() {
   };
 
   return (
-    <div className={`typeblitz-container fade-in ${isFocused ? 'focused' : ''}`}>
-      {/* GTA VI Neon Theme Animations (Anime.js) */}
+    <>
+      {/* GTA VI Neon Theme Ambient & Animations (outside transformed container) */}
       <GtaViceAnimation active={currentTheme === 'gta-6'} isTyping={status === 'typing'} />
 
-      {/* Header */}
+      <div className={`typeblitz-container fade-in ${isFocused ? 'focused' : ''}`}>
+        {/* Header */}
       <header className={`header ${isFocused ? 'header-hidden' : ''}`}>
         <div className="header-left">
           <div className="logo" onClick={() => { setActiveView('test'); startNewTest(); }} style={{ cursor: 'pointer' }}>
@@ -908,9 +909,6 @@ function App() {
           {/* Typing Area */}
           {status !== 'finished' && (
             <div className="typing-layout">
-              <aside className="typing-ad-rail" aria-label="Advertisement">
-                <AdSense />
-              </aside>
               <div className="typing-area-wrapper">
                 <canvas ref={canvasRef} className="particle-canvas" />
                 {capsLockOn && status === 'typing' && (
@@ -928,9 +926,6 @@ function App() {
                   </div>
                 </div>
               </div>
-              <aside className="typing-ad-rail" aria-label="Advertisement">
-                <AdSense />
-              </aside>
             </div>
           )}
 
@@ -1004,6 +999,7 @@ function App() {
         </div>
       </footer>
     </div>
+  </>
   );
 }
 
