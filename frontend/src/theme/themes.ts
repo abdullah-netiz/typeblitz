@@ -77,6 +77,19 @@ export const THEMES: Record<string, Theme> = {
     accent: '#D9A066',
     sub: '#8C7D75',
     description: 'Warm roasted cafe tones with honey amber'
+  },
+  'gta-6': {
+    id: 'gta-6',
+    name: 'GTA VI Vice',
+    background: '#0c0714',
+    surface: '#190e28',
+    untyped: '#785b8c',
+    correct: '#fff5fb',
+    error: '#ff2252',
+    errorExtra: '#c80032',
+    accent: '#ff2a85',
+    sub: '#9c7cae',
+    description: 'Vice City neon sunset, electric pink & cyan glow'
   }
 };
 
@@ -97,6 +110,16 @@ export function applyTheme(themeId: string): void {
   root.style.setProperty('--error-color', theme.error);
   root.style.setProperty('--error-extra-color', theme.errorExtra);
   root.style.setProperty('--accent-color', theme.accent);
+
+  if (theme.id === 'gta-6') {
+    root.setAttribute('data-theme', 'gta-6');
+    root.style.setProperty('--accent-secondary', '#00f0ff');
+    root.style.setProperty('--sunset-gold', '#ff9f43');
+  } else {
+    root.removeAttribute('data-theme');
+    root.style.removeProperty('--accent-secondary');
+    root.style.removeProperty('--sunset-gold');
+  }
 
   try {
     localStorage.setItem('typeblitz_theme', theme.id);

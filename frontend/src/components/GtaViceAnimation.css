@@ -1,0 +1,193 @@
+/* --- GTA VI Vice City Neon Animation Styles --- */
+
+.gta-anim-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Ambient Vice City Horizon Sunset Aura */
+.gta-sunset-aura {
+  position: absolute;
+  top: -150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140vw;
+  height: 500px;
+  background: radial-gradient(
+    ellipse at 50% 10%,
+    rgba(255, 42, 133, 0.18) 0%,
+    rgba(255, 120, 50, 0.1) 25%,
+    rgba(0, 240, 255, 0.05) 50%,
+    transparent 75%
+  );
+  filter: blur(40px);
+}
+
+.gta-horizon-line {
+  position: absolute;
+  top: 75px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.3) 20%,
+    rgba(255, 42, 133, 0.7) 50%,
+    rgba(255, 159, 67, 0.3) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px rgba(255, 42, 133, 0.5);
+}
+
+/* Palm Trees on Screen Edges */
+.gta-palm-decor {
+  position: absolute;
+  bottom: 0;
+  opacity: 0.38;
+  filter: drop-shadow(0 0 10px rgba(255, 42, 133, 0.35));
+  transition: opacity 0.5s ease;
+  z-index: 0;
+}
+
+.gta-palm-left {
+  left: -20px;
+}
+
+.gta-palm-right {
+  right: -20px;
+}
+
+@media (max-width: 900px) {
+  .gta-palm-decor {
+    display: none;
+  }
+}
+
+/* Floating Vice City Neon Embers */
+.gta-particles-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.gta-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.gta-particle.color-pink {
+  background: #ff2a85;
+  box-shadow: 0 0 10px #ff2a85, 0 0 20px rgba(255, 42, 133, 0.6);
+}
+
+.gta-particle.color-cyan {
+  background: #00f0ff;
+  box-shadow: 0 0 10px #00f0ff, 0 0 18px rgba(0, 240, 255, 0.6);
+}
+
+.gta-particle.color-gold {
+  background: #ff9f43;
+  box-shadow: 0 0 10px #ff9f43, 0 0 18px rgba(255, 159, 67, 0.6);
+}
+
+/* Cinematic GTA VI Announcement Toast */
+.gta-intro-toast {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: rgba(25, 14, 40, 0.92);
+  border: 1px solid rgba(255, 42, 133, 0.5);
+  padding: 0.65rem 1.4rem;
+  border-radius: 9999px;
+  box-shadow: 0 0 25px rgba(255, 42, 133, 0.35), 0 8px 30px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  z-index: 999;
+}
+
+.gta-toast-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(255, 42, 133, 0.15), rgba(0, 240, 255, 0.15));
+  pointer-events: none;
+}
+
+.gta-toast-badge {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #ff2a85, #ff9f43);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border: 1px solid rgba(255, 42, 133, 0.6);
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 42, 133, 0.4);
+}
+
+.gta-toast-text {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #fff;
+  text-transform: uppercase;
+  display: flex;
+}
+
+.gta-toast-letter {
+  display: inline-block;
+}
+
+/* Special GTA VI Theme Overrides when active */
+[data-theme="gta-6"] .logo {
+  position: relative;
+  background: linear-gradient(135deg, #ff2a85 0%, #ff8838 50%, #00f0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 12px rgba(255, 42, 133, 0.4));
+}
+
+[data-theme="gta-6"] .caret {
+  background-color: #ff2a85 !important;
+  box-shadow: 0 0 10px #ff2a85, 0 0 20px rgba(0, 240, 255, 0.7) !important;
+}
+
+[data-theme="gta-6"] .modes-group {
+  border: 1px solid rgba(255, 42, 133, 0.2);
+  box-shadow: 0 0 20px rgba(255, 42, 133, 0.08);
+}
+
+[data-theme="gta-6"] .mode-btn.active {
+  background: linear-gradient(135deg, rgba(255, 42, 133, 0.25), rgba(0, 240, 255, 0.15));
+  border: 1px solid rgba(255, 42, 133, 0.6);
+  box-shadow: 0 0 14px rgba(255, 42, 133, 0.35);
+  color: #fff !important;
+}
+
+[data-theme="gta-6"] .timer-display {
+  background: linear-gradient(135deg, #ff2a85 0%, #ff9f43 50%, #00f0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(255, 42, 133, 0.5));
+}
+
+[data-theme="gta-6"] .key-rect-clean {
+  filter: drop-shadow(0 0 4px rgba(255, 42, 133, 0.4));
+}
+
+[data-theme="gta-6"] .key-rect-high-err {
+  filter: drop-shadow(0 0 6px rgba(255, 34, 82, 0.6));
+}

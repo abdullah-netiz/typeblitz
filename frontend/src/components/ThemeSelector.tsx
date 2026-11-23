@@ -71,7 +71,10 @@ export default function ThemeSelector({ currentTheme, onSelectTheme }: ThemeSele
                     <span style={{ backgroundColor: theme.error }} className="dot-error" />
                   </div>
                   <div className="theme-meta">
-                    <span className="theme-title">{theme.name}</span>
+                    <span className="theme-title">
+                      {theme.name}
+                      {theme.id === 'gta-6' && <span className="theme-gta-badge">VI</span>}
+                    </span>
                     <span className="theme-desc">{theme.description}</span>
                   </div>
                   {isSelected && <span className="theme-check">✓</span>}

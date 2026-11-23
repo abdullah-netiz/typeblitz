@@ -8,6 +8,7 @@ import SoundSelector from './components/SoundSelector';
 import KeyHeatmap, { type HeatmapAnalytics } from './components/KeyHeatmap';
 import AdSense from './components/AdSense';
 import LegalPage, { type LegalPageType } from './components/LegalPage';
+import GtaViceAnimation from './components/GtaViceAnimation';
 import './components/SkeletonLoader.css';
 import { useAuth } from './context/AuthContext';
 import { generateWords } from './utils/wordGenerator';
@@ -114,7 +115,9 @@ function App() {
   }, []);
 
   // Initialize theme
+  const currentThemeRef = useRef(currentTheme);
   useEffect(() => {
+    currentThemeRef.current = currentTheme;
     applyTheme(currentTheme);
   }, [currentTheme]);
 
@@ -546,7 +549,11 @@ function App() {
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(tailX, p.y);
-        ctx.strokeStyle = `rgba(6, 182, 212, ${alpha})`;
+        const isGta = currentThemeRef.current === 'gta-6';
+        const strokeColor = isGta
+          ? (i % 2 === 0 ? `rgba(255, 42, 133, ${alpha})` : `rgba(0, 240, 255, ${alpha})`)
+          : `rgba(6, 182, 212, ${alpha})`;
+        ctx.strokeStyle = strokeColor;
         ctx.lineWidth = p.size;
         ctx.lineCap = 'round';
         ctx.stroke();
@@ -616,11 +623,15 @@ function App() {
 
   return (
     <div className={`typeblitz-container fade-in ${isFocused ? 'focused' : ''}`}>
+      {/* GTA VI Neon Theme Animations (Anime.js) */}
+      <GtaViceAnimation active={currentTheme === 'gta-6'} isTyping={status === 'typing'} />
+
       {/* Header */}
       <header className={`header ${isFocused ? 'header-hidden' : ''}`}>
         <div className="header-left">
           <div className="logo" onClick={() => { setActiveView('test'); startNewTest(); }} style={{ cursor: 'pointer' }}>
             <span>type</span>blitz
+            {currentTheme === 'gta-6' && <span className="logo-gta-badge">VI</span>}
           </div>
 
           <nav className="header-nav-tabs">
@@ -819,55 +830,56 @@ function App() {
             )}
           </div>
 
-          {/* Time selector (hidden in Zen mode) */}
-          {status === 'idle' && mode !== 'zen' && (
-            <div className="time-selector fade-in">
-              <div className="time-roller">
-                <div className="time-roller-mask" />
-                <div
-                  className="time-roller-track"
-                  style={{ transform: `translateY(-${selectedTimeIndex * 2.2}rem)` }}
-                >
+          {/* Time selector / Timer HUD Slot (constant height to ensure ZERO vertical jump) */}
+          <div className="test-hud-slot">
+            {status === 'idle' && mode !== 'zen' && (
+              <div className="time-selector fade-in">
+                <div className="time-roller">
+                  <div className="time-roller-mask" />
+                  <div
+                    className="time-roller-track"
+                    style={{ transform: `translateY(-${selectedTimeIndex * 2.2}rem)` }}
+                  >
+                    {TIME_OPTIONS.map(t => (
+                      <div key={t} className={`time-roller-item ${selectedTime === t ? 'active' : ''}`}>
+                        {t}s
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="time-dots">
                   {TIME_OPTIONS.map(t => (
-                    <div key={t} className={`time-roller-item ${selectedTime === t ? 'active' : ''}`}>
-                      {t}s
-                    </div>
+                    <button
+                      key={t}
+                      className={`time-dot ${selectedTime === t ? 'active' : ''}`}
+                      onClick={() => handleTimeSelect(t)}
+                      title={`${t} seconds`}
+                    />
                   ))}
                 </div>
               </div>
-              <div className="time-dots">
-                {TIME_OPTIONS.map(t => (
-                  <button
-                    key={t}
-                    className={`time-dot ${selectedTime === t ? 'active' : ''}`}
-                    onClick={() => handleTimeSelect(t)}
-                    title={`${t} seconds`}
-                  />
-                ))}
+            )}
+
+            {status === 'typing' && mode !== 'zen' && (
+              <div className="timer-display fade-in">{timeLeft}</div>
+            )}
+
+            {status === 'typing' && mode === 'zen' && (
+              <div className="zen-hud fade-in">
+                <span className="zen-badge">Zen Session: {zenElapsed}s</span>
+                <button
+                  className="zen-finish-btn"
+                  onClick={() => {
+                    const finalHist = [...history];
+                    if (currentWord.length > 0) finalHist.push(currentWord);
+                    finishTest(startTime || Date.now(), finalHist, errors);
+                  }}
+                >
+                  End Session (Shift+Enter)
+                </button>
               </div>
-            </div>
-          )}
-
-          {/* Live Timer or Zen HUD */}
-          {status === 'typing' && mode !== 'zen' && (
-            <div className="timer-display">{timeLeft}</div>
-          )}
-
-          {status === 'typing' && mode === 'zen' && (
-            <div className="zen-hud">
-              <span className="zen-badge">Zen Session: {zenElapsed}s</span>
-              <button
-                className="zen-finish-btn"
-                onClick={() => {
-                  const finalHist = [...history];
-                  if (currentWord.length > 0) finalHist.push(currentWord);
-                  finishTest(startTime || Date.now(), finalHist, errors);
-                }}
-              >
-                End Session (Shift+Enter)
-              </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Sudden Death Failure Notice */}
           {status === 'finished' && suddenDeathFailed && (
