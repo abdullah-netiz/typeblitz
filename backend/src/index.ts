@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import { connectRedis } from './config/redis';
@@ -14,6 +15,39 @@ connectDB();
 connectRedis();
 
 const app = express();
+
+// Trust first proxy (Render, Cloudflare, etc.) to accurately detect HTTPS protocol
+app.set('trust proxy', 1);
+
+// Enforce HTTPS in production: redirect unencrypted HTTP connections to HTTPS
+app.use((req, res, next) => {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    req.headers['x-forwarded-proto'] &&
+    req.headers['x-forwarded-proto'] !== 'https'
+  ) {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
+// Enable HSTS (Strict-Transport-Security: 2 years, includeSubDomains, preload) and security headers
+app.use(
+  helmet({
+    hsts: {
+      maxAge: 63072000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+// Fallback explicit HSTS header on all responses (guaranteed for every API response)
+app.use((_req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  next();
+});
 
 // Allowed origins
 const defaultAllowedOrigins = [
